@@ -339,9 +339,10 @@ async function generateResponse(query, hasAttachments = false) {
 
     // Advanced Numeric Logic: Role-based ID extraction
     if (nodeIds.length > 0) {
-        // Initial defaults (only use first number as nodeId if no context found)
+        // Initial defaults (Generic ID logic)
+        // If we only have one ID, it's usually the nodeId UNLESS labeled as parent
         entities.nodeId = nodeIds[0];
-        entities.pnode = nodeIds[1] || nodeIds[0];
+        entities.pnode = "1234";
         entities.destId = nodeIds[1] || nodeIds[0];
         entities.userId = nodeIds[0];
 
@@ -352,13 +353,14 @@ async function generateResponse(query, hasAttachments = false) {
 
             if (around.includes("parent") || around.includes("pnode") || around.includes("pid") || around.includes("in ")) {
                 entities.pnode = id;
+                // If this number is labeled parent/in, it shouldn't be the primary nodeId if there's only one number
+                if (nodeIds.length === 1) entities.nodeId = "DATAID";
             } else if (around.includes("dest") || around.includes("target") || around.includes("to ") || around.includes("into") || around.includes("template")) {
                 entities.destId = id;
+                if (nodeIds.length === 1) entities.nodeId = "DATAID";
             } else if (around.includes("user") || around.includes("member") || around.includes("owner") || around.includes("group")) {
                 entities.userId = id;
             } else if (around.includes("node") || around.includes("id") || around.includes("item") || around.includes("source") || around.includes("from")) {
-                entities.nodeId = id;
-            } else if (idx === 0 && nodeIds.length > 1 && !around.includes("parent")) {
                 entities.nodeId = id;
             }
         });
@@ -403,7 +405,8 @@ async function generateResponse(query, hasAttachments = false) {
                 const oldParent = lastSystemResponse.originalParent || "1234";
                 revertCode = lastSystemResponse.code.replace(/{DEST_ID}/, oldParent);
             } else if (lastSystemResponse.code.includes("CATACTION:SETVALUE")) {
-                revertCode = `[LL_REPTAG_${entities.nodeId} CATACTION:REMOVEVALUE:"${entities.cat}":"${entities.attr}" /]`;
+                const prevEntities = lastSystemResponse.entities || {};
+                revertCode = `[LL_REPTAG_${prevEntities.nodeId || "DATAID"} CATACTION:REMOVEVALUE:"${prevEntities.cat || "CategoryName"}":"${prevEntities.attr || "AttributeName"}" /]`;
                 revertIntent = "Undo Attribute Update (Remove Value)";
             } else {
                 return {
@@ -510,7 +513,8 @@ async function generateResponse(query, hasAttachments = false) {
             code: combinedCode,
             intent: combinedDesc.join(' and '),
             fullDesc: matchesToUse.map(m => m.desc).join(' Then '),
-            originalName: entities.name, // Corrected from entities.oldName
+            entities: { ...entities }, // Store full context
+            originalName: entities.name,
             originalParent: entities.pnode
         };
         lastSystemResponse = response;
@@ -564,7 +568,8 @@ async function generateResponse(query, hasAttachments = false) {
             text: `I've identified the specific WebReport operation for **${best.desc}**:`,
             code: code,
             intent: best.desc,
-            fullDesc: best.desc
+            fullDesc: best.desc,
+            entities: { ...entities }
         };
         lastSystemResponse = response;
         return response;
@@ -740,6 +745,7 @@ function renderMessage(text, type, code = null, attachedFiles = []) {
     chatHistory.appendChild(messageDiv);
     chatHistory.scrollTop = chatHistory.scrollHeight;
     if (code && window.Prism) Prism.highlightAll();
+    return messageDiv;
 }
 
 function addTypingIndicator() {
