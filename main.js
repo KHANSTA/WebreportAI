@@ -68,10 +68,29 @@ const KNOWLEDGE_BASE = [
     { tag: 'AUDITACTION:NODE:msg', category: 'action', desc: 'Log a custom event in the audit trail.', keywords: ['audit', 'log event', 'history'] },
 
     // --- Permissions ---
-    { tag: 'PERMCHECK:action', category: 'permission', desc: 'Check if a user has specific permissions (SEE, EDIT, DELETE, etc.).', keywords: ['permission', 'access', 'check perm', 'can i', 'has access'] },
-    { tag: 'PERMACTION:ACL:userID:UPDATE:perms', category: 'permission', desc: 'Modify object permissions (ACL, OWNER, PUBLIC). Keywords: SEE, SEECONTENTS, MODIFY, DELETE, EDITPERMS.', keywords: ['update permissions', 'grant access', 'change owner', 'acl', 'set perms'] },
-    { tag: 'PERMINFO', category: 'permission', desc: 'Retrieve detailed permission information for a node.', keywords: ['get permission info', 'who has access', 'owner info'] },
-    { tag: 'PERMTOASSOC', category: 'permission', desc: 'Convert a permission bitmask into a readable Assoc structure.', keywords: ['permission bitmask', 'bitmask to text', 'read perms'] }
+    { tag: 'PERMCHECK:action', category: 'permission', desc: 'Check if a user has specific permissions (SEE, EDIT, DELETE, etc.).', keywords: ['permission', 'access', 'check', 'perm', 'has', 'can', 'see', 'edit', 'delete'] },
+    { tag: 'PERMACTION:ACL:userID:UPDATE:perms', category: 'permission', desc: 'Modify object permissions (ACL, OWNER, PUBLIC).', keywords: ['permission', 'access', 'grant', 'revoke', 'assign', 'set', 'acl', 'owner', 'public', 'update'] },
+    { tag: 'PERMINFO', category: 'permission', desc: 'Retrieve detailed permission information for a node.', keywords: ['permission', 'info', 'who', 'access', 'owner'] },
+    { tag: 'PERMTOASSOC', category: 'permission', desc: 'Convert a permission bitmask into a readable Assoc structure.', keywords: ['permission', 'bitmask', 'assoc', 'convert', 'read'] },
+
+    // --- Records Management (RM) ---
+    { tag: 'RMACTION:ADDHOLD:hold:reason', category: 'rm', desc: 'Apply a Records Management hold to a node.', keywords: ['rm hold', 'freeze', 'legal hold'] },
+    { tag: 'RM_CLASSIFICATION', category: 'rm', desc: 'Get the RM classification of a node.', keywords: ['classification', 'retention'] },
+    { tag: 'RMINFO:STatus', category: 'rm', desc: 'Get the status of a record.', keywords: ['record status', 'is official'] },
+
+    // --- Workflow ---
+    { tag: 'WFACTION:COMPLETE:taskID', category: 'workflow', desc: 'Programmatically complete a workflow task.', keywords: ['complete task', 'finish workflow'] },
+    { tag: 'SETWFATTR:attr:val', category: 'workflow', desc: 'Set a workflow attribute value.', keywords: ['workflow attribute', 'wf attr'] },
+    { tag: 'WFINFO:workID', category: 'workflow', desc: 'Get information about a workflow instance.', keywords: ['workflow info', 'process status'] },
+
+    // --- Specialized Modules ---
+    { tag: 'XENGADN:NEXT', category: 'specialized', desc: 'Get the next number from an ADN sequence.', keywords: ['adn', 'numbering', 'sequence'] },
+    { tag: 'XENGSFM:STATE', category: 'specialized', desc: 'Get the current state in a State Flow.', keywords: ['state flow', 'sfm', 'current state'] },
+
+    // --- Advanced Tools ---
+    { tag: 'RUNSQL:reportID:params', category: 'database', desc: 'Execute a LiveReport and get results.', keywords: ['live report', 'run sql', 'query results'] },
+    { tag: 'TOJSON', category: 'format', desc: 'Convert a RecArray or Assoc to a JSON string.', keywords: ['json', 'serialize', 'tojson'] },
+    { tag: 'FROMJSON', category: 'format', desc: 'Parse a JSON string into a WebReport object.', keywords: ['json', 'deserialize', 'fromjson'] }
 ];
 
 const COMPLEX_SCENARIOS = [
@@ -98,28 +117,35 @@ const COMPLEX_SCENARIOS = [
         keywords: ['rest', 'api', 'call', 'json', 'external'],
         code: `[LL_WEBREPORT_RESTCLIENT\n@HOST:'api.example.com'\n@URI:'/v1/data'\n@METHOD:GET\n@RESPONSE:apiRes /]\n[LL_REPTAG_!apiRes ASSOC:content FROMJSON SETVAR:jsonData /]`,
         desc: 'Make a REST call and parse the JSON response into a variable.'
+    },
+    {
+        intent: 'assign permission',
+        keywords: ['assign', 'permission', 'set', 'grant', 'acl', 'user', 'folder'],
+        code: `[LL_REPTAG_2000 PERMACTION:ACL:1000:UPDATE:"SEE,SEECONTENTS,MODIFY" /]`,
+        desc: 'Assign specific permissions (See, See Contents, Modify) to a user (ID 1000) on a node (ID 2000).'
     }
 ];
 
 async function generateResponse(query) {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 800));
     const q = query.toLowerCase();
+    const tokens = q.split(/\s+/).filter(t => t.length > 2);
 
     // --- 1. Score Complex Scenarios ---
     let scenarioMatches = COMPLEX_SCENARIOS.map(s => {
         let score = 0;
         s.keywords.forEach(k => {
             if (q.includes(k)) score += 5;
+            if (k.length > 5 && (q.includes(k.substring(0, 5)) || k.includes(q.substring(0, 5)))) score += 2;
         });
-        // Bonus for exact match of intent words
         if (q.includes(s.intent)) score += 10;
         return { ...s, score };
-    }).filter(s => s.score > 5).sort((a, b) => b.score - a.score);
+    }).filter(s => s.score > 3).sort((a, b) => b.score - a.score);
 
-    if (scenarioMatches.length > 0 && scenarioMatches[0].score >= 10) {
+    if (scenarioMatches.length > 0 && scenarioMatches[0].score >= 8) {
         const best = scenarioMatches[0];
         return {
-            text: `I found a complex scenario template that matches your request for **${best.intent}**. This logic will **${best.desc}**:`,
+            text: `I found a matching scenario for **${best.intent}**. This logic will **${best.desc}**:`,
             code: best.code
         };
     }
@@ -127,44 +153,35 @@ async function generateResponse(query) {
     // --- 2. Score Individual Tags ---
     let tagMatches = KNOWLEDGE_BASE.map(t => {
         let score = 0;
-        t.keywords.forEach(k => {
-            if (q.includes(k)) {
-                // Higher weight for longer keyword matches to avoid "if" matching "different"
-                score += k.length > 2 ? k.length : 1;
-            }
+        tokens.forEach(token => {
+            if (t.tag.toLowerCase().includes(token)) score += 10;
+            if (t.desc.toLowerCase().includes(token)) score += 5;
+            t.keywords.forEach(k => {
+                if (token === k) score += 8;
+                else if (token.includes(k) || k.includes(token)) score += 3;
+            });
         });
+
+        if ((q.includes("permision") || q.includes("permission")) && t.category === "permission") score += 15;
+
         return { ...t, score };
     }).filter(t => t.score > 0).sort((a, b) => b.score - a.score);
 
     if (tagMatches.length > 0) {
-        // Find all tags with top score or close to it
-        const topScore = tagMatches[0].score;
-        const bestMatches = tagMatches.filter(t => t.score >= topScore * 0.8);
-
-        if (bestMatches.length === 1 || q.length < 20) {
-            const best = bestMatches[0];
-            let code = best.tag;
-            if (!code.startsWith('[') && !code.includes('[')) {
-                code = `[LL_REPTAG=DATAID ${best.tag} /]`;
-            }
-            return {
-                text: `I've found the most relevant WebReport tag for **${best.desc}**:`,
-                code: code
-            };
-        } else {
-            // Multiple possibilities
-            const list = bestMatches.slice(0, 3).map(t => `- **${t.tag}**: ${t.desc}`).join('\n');
-            return {
-                text: `I found a few tags that might be relevant to your request:\n\n${list}\n\nHere is an example of the top match:`,
-                code: bestMatches[0].tag.includes('[') ? bestMatches[0].tag : `[LL_REPTAG=DATAID ${bestMatches[0].tag} /]`
-            };
+        const best = tagMatches[0];
+        let code = best.tag;
+        if (!code.startsWith('[') && !code.includes('[')) {
+            code = `[LL_REPTAG=DATAID ${best.tag} /]`;
         }
+        return {
+            text: `I've found the relevant WebReport tag for **${best.desc}**:`,
+            code: code
+        };
     }
 
-    // --- 3. Default Fallback ---
     return {
-        text: "I couldn't find a specific match for that request. However, here's a versatile example of utilizing **NODEINFO** and **UPPER** formatting, which are essential for most WebReports:",
-        code: `[LL_REPTAG=DATAID NODEINFO:NAME SETVAR:NodeName /]\n[LL_REPTAG_!NodeName UPPER /]`
+        text: "I couldn't find a precise match. Please try specifying if you want to 'create', 'move', 'delete', or change 'permissions'. Here's a generic example using **NODEINFO**:",
+        code: `[LL_REPTAG=DATAID NODEINFO:NAME /]`
     };
 }
 
