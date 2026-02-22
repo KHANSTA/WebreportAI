@@ -65,10 +65,22 @@ const KNOWLEDGE_BASE = [
     { tag: 'NODEACTION:DELETE', category: 'action', desc: 'Delete the node.', keywords: ['delete node', 'remove item'] },
     { tag: 'NODEACTION:COPY:dest', category: 'action', desc: 'Copy a node to a destination.', keywords: ['copy node', 'duplicate'] },
     { tag: 'NODEACTION:MOVE:dest', category: 'action', desc: 'Move a node to a destination.', keywords: ['move node', 'relocate'] },
-    { tag: 'AUDITACTION:NODE:msg', category: 'action', desc: 'Log a custom event in the audit trail.', keywords: ['audit', 'log event', 'history'] }
+    { tag: 'AUDITACTION:NODE:msg', category: 'action', desc: 'Log a custom event in the audit trail.', keywords: ['audit', 'log event', 'history'] },
+
+    // --- Permissions ---
+    { tag: 'PERMCHECK:action', category: 'permission', desc: 'Check if a user has specific permissions (SEE, EDIT, DELETE, etc.).', keywords: ['permission', 'access', 'check perm', 'can i', 'has access'] },
+    { tag: 'PERMACTION:ACL:userID:UPDATE:perms', category: 'permission', desc: 'Modify object permissions (ACL, OWNER, PUBLIC). Keywords: SEE, SEECONTENTS, MODIFY, DELETE, EDITPERMS.', keywords: ['update permissions', 'grant access', 'change owner', 'acl', 'set perms'] },
+    { tag: 'PERMINFO', category: 'permission', desc: 'Retrieve detailed permission information for a node.', keywords: ['get permission info', 'who has access', 'owner info'] },
+    { tag: 'PERMTOASSOC', category: 'permission', desc: 'Convert a permission bitmask into a readable Assoc structure.', keywords: ['permission bitmask', 'bitmask to text', 'read perms'] }
 ];
 
 const COMPLEX_SCENARIOS = [
+    {
+        intent: 'permission check',
+        keywords: ['permission', 'access', 'check', 'button', 'show if'],
+        code: `[LL_WEBREPORT_IF "[LL_REPTAG=DATAID PERMCHECK:DELETE /]" == "TRUE" /]\n  <button>Delete Node</button>\n[LL_WEBREPORT_ENDIF /]`,
+        desc: 'Conditionally show a button or execute code only if the user has specific permissions (e.g., DELETE).'
+    },
     {
         intent: 'create folder',
         keywords: ['create', 'folder', 'folder id', 'new'],
