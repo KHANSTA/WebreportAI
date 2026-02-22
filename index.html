@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebReport AI - Code Generator</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="dark-theme">
+    <div class="bg-overlay"></div>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <span class="logo-icon">⚡</span>
+                <h1>WebReport AI</h1>
+            </div>
+            <div class="status-badge">AI Powered</div>
+        </header>
+
+        <main>
+            <div class="chat-wrapper">
+                <div id="chat-history" class="chat-history">
+                    <div class="message system">
+                        <div class="avatar">🤖</div>
+                        <div class="content">
+                            <p>Hello! I'm WebReport AI. Ask me anything about Content Server WebReport tags, or describe
+                                what you want to achieve, and I'll generate the code for you.</p>
+                            <div class="suggestions">
+                                <button class="suggest-btn">How to create a folder?</button>
+                                <button class="suggest-btn">REST API call example</button>
+                                <button class="suggest-btn">How to use IF tags?</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <div id="attachment-preview" class="attachment-preview"></div>
+                    <div class="query-box">
+                        <button id="attach-btn" class="attach-btn" title="Attach file">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path
+                                    d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.51a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                            </svg>
+                        </button>
+                        <input type="file" id="file-input" hidden multiple>
+                        <textarea id="user-input" placeholder="Ask a question about WebReport code..."
+                            rows="1"></textarea>
+                        <button id="send-btn" class="send-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="m22 2-7 20-4-9-9-4Z" />
+                                <path d="M22 2 11 13" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>

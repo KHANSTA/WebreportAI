@@ -1,0 +1,11 @@
+{
+  "name": "Webreports",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "start": "http-server ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
