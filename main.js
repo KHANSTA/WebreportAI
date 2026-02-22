@@ -304,11 +304,41 @@ async function generateResponse(query, hasAttachments = false) {
     await new Promise(resolve => setTimeout(resolve, 800));
     const q = query.toLowerCase();
 
-    // --- 0. Handle Contextual Follow-up ---
-    const followUpTokens = ["explain", "what does", "describe", "detail", "how", "change", "update", "modify"];
+    // --- 0. Handle Contextual Follow-up & Revert ---
+    const followUpTokens = ["explain", "what does", "describe", "detail", "how", "change", "update", "modify", "revert", "undo", "go back"];
     const isFollowUp = followUpTokens.some(token => q.includes(token));
 
     if (isFollowUp && lastSystemResponse && !lastSystemResponse.error) {
+        // Handle Revert/Undo
+        if (q.includes("revert") || q.includes("undo") || q.includes("go back")) {
+            let revertCode = "";
+            let revertIntent = `Revert ${lastSystemResponse.intent}`;
+
+            // Logic-based reversion
+            if (lastSystemResponse.code.includes("NODEACTION:RENAME")) {
+                const oldName = lastSystemResponse.originalName || "Original Name";
+                revertCode = lastSystemResponse.code.replace(/"[^"]+"/, `"${oldName}"`);
+            } else if (lastSystemResponse.code.includes("NODEACTION:MOVE")) {
+                const oldParent = lastSystemResponse.originalParent || "1234";
+                revertCode = lastSystemResponse.code.replace(/{DEST_ID}/, oldParent);
+            } else if (lastSystemResponse.code.includes("CATACTION:SETVALUE")) {
+                revertCode = `[LL_REPTAG_${entities.nodeId} CATACTION:REMOVEVALUE:"${entities.cat}":"${entities.attr}" /]`;
+                revertIntent = "Undo Attribute Update (Remove Value)";
+            } else {
+                return {
+                    text: `I understand you want to **revert** the previous operation (${lastSystemResponse.intent}). However, this specific operation doesn't have a direct inverse WebReport tag. You might need to manually delete or adjust the node.`,
+                    error: true
+                };
+            }
+
+            return {
+                text: `I've generated the logic to **revert** your last action. Here is the "Undo" WebReport code:`,
+                code: revertCode,
+                intent: revertIntent,
+                fullDesc: `Inverse operation of: ${lastSystemResponse.fullDesc}`
+            };
+        }
+
         if (q.includes("explain") || q.includes("what does") || q.includes("detail")) {
             return {
                 text: `The previously generated code performs a **${lastSystemResponse.intent || 'specific WebReport operation'}**. 
@@ -432,7 +462,9 @@ async function generateResponse(query, hasAttachments = false) {
             text: `I've interpreted your request as a **${combinedDesc.join(' and ')}** sequence. Here is the generated WebReport logic:`,
             code: combinedCode,
             intent: combinedDesc.join(' and '),
-            fullDesc: matchesToUse.map(m => m.desc).join(' Then ')
+            fullDesc: matchesToUse.map(m => m.desc).join(' Then '),
+            originalName: entities.oldName, // Store for potential revert
+            originalParent: entities.pnode
         };
         lastSystemResponse = response;
         return response;
@@ -568,12 +600,43 @@ async function handleSend() {
     try {
         const response = await generateResponse(query, currentAttachments.length > 0);
         removeTypingIndicator(typingId);
-        addMessage(response.text, response.error ? 'system error' : 'system', response.code);
+
+        if (response.error) {
+            addMessage(response.text, 'system error');
+        } else {
+            // ChatGPT-Style Streaming Effect
+            const messageDiv = addMessage("", 'system', response.code);
+            const contentDiv = messageDiv.querySelector('.content p') || messageDiv.querySelector('.content');
+            await typeMessage(response.text, contentDiv);
+
+            // Log for memory
+            messages[messages.length - 1].text = response.text;
+        }
     } catch (error) {
         console.error(error);
         removeTypingIndicator(typingId);
         addMessage("Sorry, I encountered an error processing your request.", 'system error');
     }
+}
+
+async function typeMessage(text, element) {
+    const words = text.split(' ');
+    element.innerHTML = '';
+    element.classList.add('typing-cursor');
+    for (let i = 0; i < words.length; i++) {
+        element.innerHTML += words[i] + ' ';
+        chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
+        await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 20));
+
+        // Handle bolding/markdown-lite
+        if (element.innerHTML.includes('**')) {
+            const parts = element.innerHTML.split('**');
+            if (parts.length >= 3) {
+                element.innerHTML = parts[0] + '<strong>' + parts[1] + '</strong>' + parts.slice(2).join('**');
+            }
+        }
+    }
+    element.classList.remove('typing-cursor');
 }
 
 if (sendBtn) sendBtn.addEventListener('click', handleSend);
@@ -594,14 +657,15 @@ suggestionBtns.forEach(btn => {
 });
 
 function addMessage(text, type, code = null, attachedFiles = []) {
-    messages.push({ text, type, code, attachedFiles });
-    renderMessage(text, type, code, attachedFiles);
+    const msg = { text, type, code, attachedFiles };
+    messages.push(msg);
+    return renderMessage(text, type, code, attachedFiles);
 }
 
 function renderMessage(text, type, code = null, attachedFiles = []) {
     const messageDiv = document.createElement('div');
     const isError = type.includes('error');
-    messageDiv.className = `message ${type}`;
+    messageDiv.className = `message ${type} fade-in`;
     const avatar = type === 'user' ? '👤' : (isError ? '⚠️' : '🤖');
 
     let contentHtml = text ? `<p>${text}</p>` : '';
