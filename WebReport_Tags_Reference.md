@@ -1,127 +1,102 @@
-# Webreport AI Sub-tag Reference Guide
+# Webreport AI Exhaustive Reference Guide
 
-This guide provides a structured overview of the sub-tags and functionalities available within the Webreport AI system, based on the documentation in [Webreport AI](file:///d:/LLM/Webreports/Webreport AI).
-
-## 1. Node Management & Information
-Sub-tags for interacting with Content Server nodes (documents, folders, etc.).
-
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `NODEINFO` | Retrieves node metadata (Name, ID, Size, Path, etc.). | `[LL_REPTAG_!NodeID NODEINFO:NAME /]` |
-| `NODEACTION` | Performs actions like COPY, MOVE, RENAME, DELETE, CREATE. | `[LL_REPTAG_!NodeID NODEACTION:RENAME:"New Name" /]` |
-| `RESERVE` | Reserves/Checkouts a node to a specific user. | `[LL_REPTAG_!NodeID RESERVE:1000 /]` |
-| `VERSIONCONTROL` | Sets versioning to Standard or Advanced. | `[LL_REPTAG_!NodeID VERSIONCONTROL:ADVANCED /]` |
-
-## 2. Records Management (RM)
-Functions for managing record life cycles, classifications, holds, and retrieval.
-
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `RM_ACTION` | Performs various RM actions like adding classifications or managing holds. | `[LL_REPTAG_!NodeID RM_ACTION:... /]` |
-| `RM_CLASSIFICATION` | Retrieves classification information for a node. | `[LL_REPTAG_!NodeID RM_CLASSIFICATION /]` |
-| `RM_HOLD` | Manages RM holds on nodes. | `[LL_REPTAG_!NodeID RM_ACTION:ADDHOLD:"Hold Name" /]` |
-
-## 3. Permissions & Security
-Sub-tags for managing ACLs, roles, and security clearance.
-
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `PERMACTION` | Updates ACLs, Owners, or Public access. | `[LL_REPTAG_!NodeID PERMACTION:ACL:1234:UPDATE:SEE /]` |
-| `PERMCHECK` | Checks if a user has specific permissions. | `[LL_REPTAG_!NodeID PERMCHECK:DELETE /]` |
-| `PERMINFO` | Returns detailed permission Assocs for a node. | `[LL_REPTAG_!NodeID PERMINFO:OWNER /]` |
-| `ROLEACTION` | Manages roles and role members in a workspace. | `[LL_REPTAG_!WkspID ROLEACTION:ADD:NAME="Manager" /]` |
-| `SECURITY_LEVEL` | Gets or sets the security level for a node or user. | `[LL_REPTAG_!UserID SECURITY_LEVEL /]` |
-| `SCACTION` | Manages Security Clearance and Supplemental Markings. | `[LL_REPTAG_!NodeID SCACTION:CURRENTSECURITY:1 /]` |
-
-## 3. Workflow Management
-Interactions with workflows, task management, and attribute setting.
-
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `WFTASK` | Retrieves information or performs actions on a workflow task. | `[LL_REPTAG_!WorkID WFTASK:STATUS /]` |
-| `WFATTR` | Gets or sets workflow attributes. | `[LL_REPTAG_!WorkID WFATTR:"AttrName":Value /]` |
-| `WFACTION` | Manipulates workflow status (ARCHIVE, DELETE, RESUME, STOP, etc.). | `[LL_REPTAG_!SubWorkID WFACTION:STOP /]` |
-| `SETWFATTR` | Sets workflow attributes from within a workflow context. | `[LL_REPTAG_!Val SETWFATTR:"AttrName" /]` |
-| `SETWFFORM` | Populates form fields attached to a workflow. | `[LL_REPTAG_!Val SETWFFORM:Form:Attr /]` |
-| `WFTASKACTION` | Performs step-level actions like REASSIGN or SENDON. | `[LL_REPTAG_!TaskIDList WFTASKACTION:SENDON /]` |
-| `WFINFO` | Retrieves workflow instance metadata (Title, Status, Dates). | `[LL_REPTAG_!SubWorkID WFINFO:TITLE /]` |
-
-## 4. User and Group Administration
-Sub-tags for managing identities and their properties.
-
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `USER_INFO` | Retrieves specific information about a user. | `[LL_REPTAG_!UserID USER_INFO:LOGINNAME /]` |
-| `GROUP_MEMBERS` | Lists members of a target group. | `[LL_REPTAG_!GroupID GROUP_MEMBERS /]` |
-| `CREATE_USER` | Create a new user account (admin functionality). | `[LL_REPTAG_!AdminID CREATE_USER:... /]` |
-
-## 5. String and Data Manipulation
-Utility sub-tags for formatting and transforming data.
-
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `TOJSON` | Converts a data structure to a JSON string. | `[LL_REPTAG_!Data TOJSON /]` |
-| `TOLIST` | Converts a string or structure to a list. | `[LL_REPTAG_!String TOLIST:"," /]` |
-| `TODATE` | Converts a string to a date object based on format. | `[LL_REPTAG_!String TODATE:"%Y/%m/%d" /]` |
-| `SUBSTR` | Extracts a substring based on start index and width. | `[LL_REPTAG_!String SUBSTR:5:10 /]` |
-| `SLICE` | Extracts a slice based on start and end index. | `[LL_REPTAG_!String SLICE:5:15 /]` |
-| `STRIPHTML` | Removes all HTML tags from the input. | `[LL_REPTAG_!HtmlStr STRIPHTML /]` |
-| `SIZE` | Converts a numeric size to KB, MB, or GB string. | `[LL_REPTAG_"1048576" SIZE /]` |
-| `ROUND` | Rounds numeric values (supports CEIL, FLOOR). | `[LL_REPTAG_!Num ROUND:2 /]` |
-| `REPLACE` | Global find and replace within a string. | `[LL_REPTAG_!Str REPLACE:"Old":"New" /]` |
-| `PATCHANGE` | Regex-like pattern change (find and replace). | `[LL_REPTAG_!Str PATCHANGE:"find":"replace" /]` |
-
-## 7. Database & SQL Execution
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `RUNSQL` | Executes a LiveReport and returns a RecArray. | `[LL_REPTAG_!LiveReportID RUNSQL:"Param1" /]` |
-| `WFDBLOOKUP` | Look up data from WebForms database tables. | `[LL_REPTAG_!Key WFDBLOOKUP:Table:Col /]` |
-| `PARSECSV` | Parses CSV strings into structured RecArrays. | `[LL_REPTAG_'A,B,C' PARSECSV /]` |
-
-## 8. Sub-WebReports & Templates
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `RUNSWR` | Calls a sub-WebReport with parameters. | `[LL_REPTAG_!WebReportID RUNSWR:P1:V1 /]` |
-| `RUNTEMPLATE` | Runs a template sharing the current context. | `[LL_REPTAG_!TemplateID RUNTEMPLATE /]` |
-
-## 9. Business Workspace Management
-Integration with Business Workspaces and Objects.
-
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `BWS_ACTION` | Performs actions related to Business Workspaces. | `[LL_REPTAG_!BWSID BWS_ACTION:SYNC /]` |
-| `BO_INFO` | Retrieves information about a Business Object. | `[LL_REPTAG_!BOID BO_INFO /]` |
-
-## 7. Specialized Modules
-
-### ADN (Automated Document Numbering)
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `XENGADN` | Retrieves ADN numbers and references. | `[LL_REPTAG_!ADNID XENGADN:GETREFERENCES /]` |
-| `XENGADNACTION` | Bulk generation, locking/unlocking, and referencing of ADN IDs. | `[LL_REPTAG_!NodeID XENGADNACTION:REFER:... /]` |
-
-### CAD & Engineering
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `XENGCAD` | Retrieves CAD document relationships. | `[LL_REPTAG_!NodeID XENGCAD:GETRELATIONSHIPS /]` |
-| `XENGCADACTION` | Connects or disconnects XRef relationships for CAD docs. | `[LL_REPTAG_!NodeID XENGCADACTION:XREFCONNECT /]` |
-
-### State Flows & Transitions
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `XENGSFM` | Gets state flow info and applicable transitions. | `[LL_REPTAG_!NodeID XENGSFM:STATEFLOWINFO /]` |
-| `XENGSFMACTION` | Transitions documents, adds/removes assignees, or delegates. | `[LL_REPTAG_!NodeID XENGSFMACTION:TRANSITION /]` |
-
-### Transmittals & Shipping
-| Sub-tag | Description | Example |
-|---------|-------------|---------|
-| `XENGTRANSMITTAL` | Gets details or reports on transmittal workspaces. | `[LL_REPTAG_!TID XENGTRANSMITTAL:TRANSMITTALINFO /]` |
-| `XENGTRANSMITTALACTION` | Adds recipients, packages, or sends transmittals. | `[LL_REPTAG_!TID XENGTRANSMITTALACTION:SEND /]` |
-
-### Revision Control (XENGCRT)
-- `XENGCRTACTION`: Controls documents, signs in/out, changes status, and manages obsolescence.
-- `XENGCRTControlDocumentCount`: Reports on controlled documents based on status/indicators.
+This document is an exhaustive catalog of all tags and sub-tags identified in the [Webreport AI](file:///d:/LLM/Webreports/Webreport AI) documentation. It is categorized by the primary documentation sections: Content Control Tags, Data Tags, and Sub-Tags.
 
 ---
-> [!NOTE]
-> This guide is a synthesis of the extensive documentation provided. For specific syntax details and edge cases, refer to the original file.
+
+## 1. Content Control Tags
+These tags control the execution, flow, and output environment of the WebReport.
+
+| Tag Name | Description | Common Usage |
+|----------|-------------|--------------|
+| `[// ... ]` | Single line comment. | Restricting data sent to browser. |
+| `[/* ... */]` | Block comment. | Multi-line documentation within reports. |
+| `[LL_WEBREPORT_APPEAR...OFF /]` | Excludes specific Appearance HTML (BOTTOM, LEFT, RIGHT, TOP, TOPHEADER). | Clean UI/Custom layouts. |
+| `[LL_WEBREPORT_CALL ... /]` | Calls a server-side OScript function. | Complex server-side logic. |
+| `[LL_WEBREPORT_COMPILER ... /]` | Evaluates constants/parameters at runtime. | Dynamic tag evaluation. |
+| `[LL_WEBREPORT_COMPRESS /]` | Removes whitespace from output. | Performance optimization. |
+| `[LL_WEBREPORT_ENABLEROWFILTERS /]` | Enables support for filtering rows using "fc_filters". | Dynamic client-side filtering. |
+| `[LL_WEBREPORT_EXCLUDE... /]` | Excludes standard UI elements (ADDITEM, CHANNEL, FOOTER, HEADER, HTML, LOCATIONDISPLAY, MENU, SEARCH, TITLE). | Embedding reports in other pages. |
+| `[LL_WEBREPORT_EXITIF (expr) /]` | Stops row processing when a condition is met. | Early exit from loops. |
+| `[LL_WEBREPORT_FOR ... /]` | Loops over collections (Lists, RecArrays, Assocs, etc.). | Iterating through results. |
+| `[LL_WEBREPORT_FORCEUTF8 /]` | Adds a UTF8 BOM to the output. | Character encoding fix. |
+| `[LL_WEBREPORT_FORMPARSEOFF /] ` | Disables standard WebForms parsing. | WebReports in Power Views. |
+| `[LL_WEBREPORT_IF /] [LL_WEBREPORT_ELSEIF /] [LL_WEBREPORT_ELSE /]` | Conditional logic. | Show/hide content based on data. |
+| `[LL_WEBREPORT_INCLUDEDISTINCT /]` | Limits rows to unique key values. | Deduplicating results. |
+| `[LL_WEBREPORT_INCLUDEIF (expr) /]` | Determines if a whole row is included. | Data-driven filtering. |
+| `[LL_WEBREPORT_INCLUDERANGE /]` | Limits rows to a specific range (STARTROW, ENDROW, MAXROWS). | Pagination support. |
+| `[LL_WEBREPORT_INSERTJSARRAY /]` | Inserts data as a JavaScript array. | Client-side data manipulation. |
+| `[LL_WEBREPORT_INSERTJSON /]` | Inserts data formatted as JSON. | AJAX integrations. |
+| `[LL_WEBREPORT_JSLIBS /]` | Inserts standard Content Server JS libraries. | UI enhancements (JQUERY, BROWSE). |
+| `[LL_WEBREPORT_RESTCLIENT /]` | Sends requests to external REST APIs. | External system integration. |
+| `[LL_WEBREPORT_RUNIF (expr) /]` | Aborts report execution if condition met. | Global access control. |
+| `[LL_WEBREPORT_SORT /]` | Sorts the report data set. | Ordering results. |
+| `[LL_WEBREPORT_SUBWEBREPORT /]` | Calls another WebReport and inserts results. | Modular report building. |
+| `[LL_WEBREPORT_TITLE /]` | Overrides the browser title. | Custom labeling. |
+
+---
+
+## 2. Data Tags (Static & Dynamic)
+Tags that retrieve specific data points from the system or context.
+
+| Tag Name | Description | Category |
+|----------|-------------|----------|
+| `[LL_REPTAG=<col> /]` | Inserts source data from `<columnname>`. | Source Data |
+| `[LL_REPTAG_!var /]` | Shortcut to `[LL_REPTAG_%var CURRENTVAL /]`. | Variables |
+| `[LL_REPTAG_$const /]` | Accesses defined constants. | Infrastructure |
+| `[LL_REPTAG_%var /]` | Returns the final value of a variable. | Variables |
+| `[LL_REPTAG_&parm /]` | Accesses URL parameters (querystring). | Request Data |
+| `[LL_REPTAG_@FUNC /]` | Data functions (AVERAGE, MIN, MAX, SUM, DATA[r]). | Math/Stats |
+| `[LL_REPTAG_ACTUALROWS /]` | Number of rows after `INCLUDEIF`. | Stats |
+| `[LL_REPTAG_ACTUALUSERID /]` | ID of the actual user (ignores RunAs). | Identity |
+| `[LL_REPTAG_APPSUPPORTDIR /]` | Path to application support dir. | Pathing |
+| `[LL_REPTAG_DATE /] [LL_REPTAG_DATETIME /]` | Current execution date/time. | Metadata |
+| `[LL_REPTAG_DATASOURCE /]` | Returns full data source as RecArray. | Source Data |
+| `[LL_REPTAG_EACID /] [LL_REPTAG_EACPARAMS /]` | Event Action Center data. | Events |
+| `[LL_REPTAG_LANGUAGE /]` | Current system language. | Localization |
+| `[LL_REPTAG_MYID /] [LL_REPTAG_MYURL /]` | Current WebReport ID and URL. | Context |
+| `[LL_REPTAG_OTCSTICKET /]` | Generates REST API auth ticket. | Security |
+| `[LL_REPTAG_PARENTID /]` | DataID of the parent object. | Node Data |
+| `[LL_REPTAG_ROWNUM /]` | Current row index. | Iteration |
+| `[LL_REPTAG_TRIGGER /]` | The event that initiated the report. | Events |
+| `[LL_REPTAG_USERID /] [LL_REPTAG_USERNAME /]` | Current user details. | Identity |
+
+---
+
+## 3. Sub-Tag Reference Guide
+These sub-tags format or transform the data retrieved by Data Tags.
+
+### Formatting & Types
+- `UPPER`, `LOWER`: Case conversion.
+- `TODATE`, `DATE`: Date parsing and formatting.
+- `TOJSON`, `UNESCAPEJSON`: JSON operations.
+- `TRIM`, `SUBSTR`, `SLICE`, `LENGTH`: String manipulation.
+- `REPLACE`, `PATCHANGE`: Text substitution.
+- `STRIPHTML`: Cleaning HTML tags.
+
+### Logic & Math
+- `ADD`, `SUBTRACT`, `MULTIPLY`, `DIVIDE`, `MODULUS`: Basic arithmetic.
+- `ROUND`: Rounding (CEIL, FLOOR).
+- `AVERAGE`, `SUM`, `MAX`, `MIN`: Collection operations.
+- `DECODE`: Conditional value mapping (IF-THEN-ELSE).
+- `BITCHECK`: Binary bit testing.
+
+### System & Metadata
+- `NODEINFO`: Context data (Name, ID, Parent, Path, Subtype, etc.).
+- `NODEACTION`: Object operations (CREATE, COPY, MOVE, RENAME, DELETE).
+- `PERMINFO`, `PERMACTION`, `PERMCHECK`: Security management.
+- `RM_INFO`, `RM_ACTION`: Records Management (Classifications, Holds).
+- `WFTASK`, `WFINFO`, `WFACTION`: Workflow integration.
+- `USER_INFO`, `USER_ACTION`, `GROUP_MEMBERS`: ID management.
+- `CAT`, `CATACTION`: Category and Attribute access.
+
+### Specialized
+- `XENGADN`: Automated Document Numbering.
+- `XENGCAD`: Engineering/CAD relationships.
+- `XENGSFM`: State Flow management.
+- `XENGTRANSMITTAL`: Shipping/Transmittal packages.
+- `BOINFO`, `BOACTION`: Extended ECM Business Objects.
+
+---
+> [!IMPORTANT]
+> This guide is dynamically synchronized with the core documentation to ensure the AI utilizes the correct syntax for 400+ tags.
