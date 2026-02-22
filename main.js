@@ -221,7 +221,7 @@ const COMPLEX_SCENARIOS = [
         intent: 'v2 business workspace creation',
         primary: '/v2/businessworkspaces',
         keywords: ['restclient', 'workspace', 'create', 'v2 api', 'post', 'header', 'body', 'xecm'],
-        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for the Business Workspace ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "template_id": {DEST_ID}, "name": "{NAME}" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the workspace ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/businessworkspaces'\n@METHOD:{METHOD}\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
+        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for the Business Workspace ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "template_id": {DEST_ID}, "name": "{NAME}", "description": "Created via WebReport AI" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the workspace ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/businessworkspaces'\n@METHOD:{METHOD}\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
         desc: 'Create a Business Workspace using the Content Server REST API v2 endpoint.'
     },
     {
@@ -318,7 +318,74 @@ async function generateResponse(query, hasAttachments = false) {
     await new Promise(resolve => setTimeout(resolve, 800));
     const q = query.toLowerCase();
 
-    // --- 0. Handle Contextual Follow-up & Revert ---
+    // --- 0. Deep Entity Extraction ---
+    const nodeIds = q.match(/\b\d{4,}\b/g) || [];
+    const quotedMatch = [...query.matchAll(/["']([^"']+)["']/g)];
+    const quoted = quotedMatch.map(m => m[1]);
+
+    const entities = {
+        nodeId: "DATAID",
+        destId: "2000",
+        pnode: "1234",
+        userId: "1000",
+        name: quoted[0] || "New Name",
+        cat: "CategoryName",
+        attr: "AttributeName",
+        val: "NewValue",
+        type: "FOLDER",
+        ver: "1",
+        method: "GET"
+    };
+
+    // Advanced Numeric Logic: Role-based ID extraction
+    if (nodeIds.length > 0) {
+        // Initial defaults (only use first number as nodeId if no context found)
+        entities.nodeId = nodeIds[0];
+        entities.pnode = nodeIds[1] || nodeIds[0];
+        entities.destId = nodeIds[1] || nodeIds[0];
+        entities.userId = nodeIds[0];
+
+        // Refine based on keywords per number
+        nodeIds.forEach((id, idx) => {
+            const pos = query.indexOf(id);
+            const around = q.substring(Math.max(0, pos - 40), Math.min(q.length, pos + id.length + 40));
+
+            if (around.includes("parent") || around.includes("pnode") || around.includes("pid") || around.includes("in ")) {
+                entities.pnode = id;
+            } else if (around.includes("dest") || around.includes("target") || around.includes("to ") || around.includes("into") || around.includes("template")) {
+                entities.destId = id;
+            } else if (around.includes("user") || around.includes("member") || around.includes("owner") || around.includes("group")) {
+                entities.userId = id;
+            } else if (around.includes("node") || around.includes("id") || around.includes("item") || around.includes("source") || around.includes("from")) {
+                entities.nodeId = id;
+            } else if (idx === 0 && nodeIds.length > 1 && !around.includes("parent")) {
+                entities.nodeId = id;
+            }
+        });
+    }
+
+    // Method Detection
+    const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
+    methods.forEach(m => {
+        if (q.includes(m.toLowerCase())) entities.method = m;
+    });
+
+    // Contextual Role Assignment for Quoted Strings
+    if (quoted.length > 0) {
+        quotedMatch.forEach((m, i) => {
+            const str = m[1];
+            const pos = m.index;
+            const around = q.substring(Math.max(0, pos - 30), Math.min(q.length, pos + str.length + 30));
+
+            if (around.includes("category") || around.includes("cat")) entities.cat = str;
+            else if (around.includes("attribute") || around.includes("attr")) entities.attr = str;
+            else if (around.includes("value") || around.includes(" to ") || around.includes("=")) entities.val = str;
+            else if (around.includes("type") || around.includes("kind")) entities.type = str.toUpperCase();
+            else if (around.includes("version") || around.includes("ver")) entities.ver = str;
+            else if (i === 0) entities.name = str;
+        });
+    }
+
     const followUpTokens = ["explain", "what does", "describe", "detail", "how", "change", "update", "modify", "revert", "undo", "go back"];
     const isFollowUp = followUpTokens.some(token => q.includes(token));
 
@@ -363,73 +430,6 @@ async function generateResponse(query, hasAttachments = false) {
                 code: lastSystemResponse.code
             };
         }
-    }
-
-    // --- Deep Entity Extraction ---
-    const nodeIds = q.match(/\b\d{4,}\b/g) || [];
-    const quotedMatch = [...query.matchAll(/["']([^"']+)["']/g)];
-    const quoted = quotedMatch.map(m => m[1]);
-
-    const entities = {
-        nodeId: "DATAID",
-        destId: "2000",
-        pnode: "1234",
-        userId: "1000",
-        name: quoted[0] || "New Name",
-        cat: "CategoryName",
-        attr: "AttributeName",
-        val: "NewValue",
-        type: "FOLDER",
-        ver: "1",
-        method: "GET"
-    };
-
-    // Advanced Numeric Logic: Role-based ID extraction
-    if (nodeIds.length > 0) {
-        // Default assignments
-        entities.nodeId = nodeIds[0];
-        entities.pnode = nodeIds[0];
-        entities.destId = nodeIds[1] || nodeIds[0];
-        entities.userId = nodeIds[0];
-
-        // Refine based on keywords per number
-        nodeIds.forEach(id => {
-            const pos = query.indexOf(id);
-            const around = q.substring(Math.max(0, pos - 40), Math.min(q.length, pos + id.length + 40));
-
-            if (around.includes("parent") || around.includes("pnode") || around.includes("pid") || around.includes("in ")) {
-                entities.pnode = id;
-            } else if (around.includes("dest") || around.includes("target") || around.includes("to ") || around.includes("into")) {
-                entities.destId = id;
-            } else if (around.includes("user") || around.includes("member") || around.includes("owner")) {
-                entities.userId = id;
-            } else {
-                entities.nodeId = id;
-            }
-        });
-    }
-
-    // Method Detection
-    const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
-    methods.forEach(m => {
-        if (q.includes(m.toLowerCase())) entities.method = m;
-    });
-
-    // Contextual Role Assignment for Quoted Strings
-    if (quoted.length > 0) {
-        quotedMatch.forEach((m, i) => {
-            const str = m[1];
-            const lowerStr = str.toLowerCase();
-            const pos = m.index;
-            const around = q.substring(Math.max(0, pos - 30), Math.min(q.length, pos + str.length + 30));
-
-            if (around.includes("category") || around.includes("cat")) entities.cat = str;
-            else if (around.includes("attribute") || around.includes("attr")) entities.attr = str;
-            else if (around.includes("value") || around.includes(" to ") || around.includes("=")) entities.val = str;
-            else if (around.includes("type") || around.includes("kind")) entities.type = str.toUpperCase();
-            else if (around.includes("version") || around.includes("ver")) entities.ver = str;
-            else if (i === 0) entities.name = str;
-        });
     }
 
     const tokens = q.split(/\s+/).filter(t => t.length > 2);
