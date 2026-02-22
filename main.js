@@ -214,14 +214,14 @@ const COMPLEX_SCENARIOS = [
         intent: 'v2 nodes folder creation',
         primary: '/v2/nodes',
         keywords: ['restclient', 'folder', 'create', 'v2 api', 'post', 'header', 'body'],
-        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for creating the Folder ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "type": 0, "name": "{NAME}" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the folder ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/nodes'\n@METHOD:POST\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
+        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for creating the Folder ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "type": 0, "name": "{NAME}" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the folder ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/nodes'\n@METHOD:{METHOD}\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
         desc: 'Create a folder using the Content Server REST API v2 /nodes endpoint with proper headers and body.'
     },
     {
         intent: 'v2 business workspace creation',
         primary: '/v2/businessworkspaces',
         keywords: ['restclient', 'workspace', 'create', 'v2 api', 'post', 'header', 'body', 'xecm'],
-        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for the Business Workspace ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "template_id": {DEST_ID}, "name": "{NAME}" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the workspace ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/businessworkspaces'\n@METHOD:POST\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
+        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for the Business Workspace ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "template_id": {DEST_ID}, "name": "{NAME}" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the workspace ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/businessworkspaces'\n@METHOD:{METHOD}\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
         desc: 'Create a Business Workspace using the Content Server REST API v2 endpoint.'
     },
     {
@@ -307,9 +307,11 @@ const COMPLEX_SCENARIOS = [
         keywords: ['attribute', 'category', 'set', 'update', 'metadata', 'cataction'],
         code: `[LL_REPTAG_{NODE_ID} CATACTION:SETVALUE:"{CAT_NAME}":"{ATTR_NAME}":"{VALUE}" /]`,
         desc: 'Set the value of a specific attribute within a category for a node.'
-    },
-    // --- Contextual Memory ---
-    let lastSystemResponse = null;
+    }
+];
+
+// --- Contextual Memory ---
+let lastSystemResponse = null;
 
 // ADVANCED LOGIC: Entity Extraction & Combinatorial Intent Scoring
 async function generateResponse(query, hasAttachments = false) {
@@ -369,17 +371,49 @@ async function generateResponse(query, hasAttachments = false) {
     const quoted = quotedMatch.map(m => m[1]);
 
     const entities = {
-        nodeId: nodeIds[0] || "DATAID",
-        destId: nodeIds[1] || "2000",
-        pnode: nodeIds[1] || nodeIds[0] || "1234",
-        userId: nodeIds[0] || "1000",
+        nodeId: "DATAID",
+        destId: "2000",
+        pnode: "1234",
+        userId: "1000",
         name: quoted[0] || "New Name",
         cat: "CategoryName",
         attr: "AttributeName",
         val: "NewValue",
         type: "FOLDER",
-        ver: "1"
+        ver: "1",
+        method: "GET"
     };
+
+    // Advanced Numeric Logic: Role-based ID extraction
+    if (nodeIds.length > 0) {
+        // Default assignments
+        entities.nodeId = nodeIds[0];
+        entities.pnode = nodeIds[0];
+        entities.destId = nodeIds[1] || nodeIds[0];
+        entities.userId = nodeIds[0];
+
+        // Refine based on keywords per number
+        nodeIds.forEach(id => {
+            const pos = query.indexOf(id);
+            const around = q.substring(Math.max(0, pos - 40), Math.min(q.length, pos + id.length + 40));
+
+            if (around.includes("parent") || around.includes("pnode") || around.includes("pid") || around.includes("in ")) {
+                entities.pnode = id;
+            } else if (around.includes("dest") || around.includes("target") || around.includes("to ") || around.includes("into")) {
+                entities.destId = id;
+            } else if (around.includes("user") || around.includes("member") || around.includes("owner")) {
+                entities.userId = id;
+            } else {
+                entities.nodeId = id;
+            }
+        });
+    }
+
+    // Method Detection
+    const methods = ["GET", "POST", "PUT", "DELETE", "PATCH"];
+    methods.forEach(m => {
+        if (q.includes(m.toLowerCase())) entities.method = m;
+    });
 
     // Contextual Role Assignment for Quoted Strings
     if (quoted.length > 0) {
@@ -464,7 +498,8 @@ async function generateResponse(query, hasAttachments = false) {
                 .replace(/{ATTR_NAME}/g, entities.attr)
                 .replace(/{VALUE}/g, entities.val)
                 .replace(/{TYPE}/g, entities.type)
-                .replace(/{VER}/g, entities.ver);
+                .replace(/{VER}/g, entities.ver)
+                .replace(/{METHOD}/g, entities.method);
 
             combinedCode += (index > 0 ? "\n\n" : "") + snippet;
             combinedDesc.push(match.intent);
@@ -639,58 +674,58 @@ async function typeMessage(text, element) {
         element.innerHTML += words[i] + ' ';
         chatHistory.scrollTo({ top: chatHistory.scrollHeight, behavior: 'smooth' });
         await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 20));
-
-        // Handle bolding/markdown-lite
-        element.innerHTML = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-        element.classList.remove('typing-cursor');
     }
+    // Handle bolding/markdown-lite
+    element.innerHTML = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    element.classList.remove('typing-cursor');
+}
 
-    if (sendBtn) sendBtn.addEventListener('click', handleSend);
-    if (userInput) {
-        userInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-            }
-        });
-    }
-
-    suggestionBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            userInput.value = btn.textContent;
+if (sendBtn) sendBtn.addEventListener('click', handleSend);
+if (userInput) {
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
             handleSend();
-        });
+        }
     });
+}
 
-    function addMessage(text, type, code = null, attachedFiles = []) {
-        const msg = { text, type, code, attachedFiles };
-        messages.push(msg);
-        return renderMessage(text, type, code, attachedFiles);
-    }
+suggestionBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        userInput.value = btn.textContent;
+        handleSend();
+    });
+});
 
-    function renderMessage(text, type, code = null, attachedFiles = []) {
-        const messageDiv = document.createElement('div');
-        const isError = type.includes('error');
-        messageDiv.className = `message ${type} fade-in`;
-        const avatar = type === 'user' ? '👤' : (isError ? '⚠️' : '🤖');
+function addMessage(text, type, code = null, attachedFiles = []) {
+    const msg = { text, type, code, attachedFiles };
+    messages.push(msg);
+    return renderMessage(text, type, code, attachedFiles);
+}
 
-        let contentHtml = text ? `<p>${text}</p>` : '';
+function renderMessage(text, type, code = null, attachedFiles = []) {
+    const messageDiv = document.createElement('div');
+    const isError = type.includes('error');
+    messageDiv.className = `message ${type} fade-in`;
+    const avatar = type === 'user' ? '👤' : (isError ? '⚠️' : '🤖');
 
-        if (attachedFiles.length > 0) {
-            contentHtml += `<div class="attached-files">`;
-            attachedFiles.forEach(file => {
-                contentHtml += `
+    let contentHtml = text ? `<p>${text}</p>` : '';
+
+    if (attachedFiles.length > 0) {
+        contentHtml += `<div class="attached-files">`;
+        attachedFiles.forEach(file => {
+            contentHtml += `
                 <div class="file-pill">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <span>${file.name}</span>
                 </div>`;
-            });
-            contentHtml += `</div>`;
-        }
+        });
+        contentHtml += `</div>`;
+    }
 
-        if (code) {
-            const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
-            contentHtml += `
+    if (code) {
+        const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+        contentHtml += `
             <div class="code-container">
                 <div class="code-title">
                     <span>WebReport Code</span>
@@ -699,45 +734,45 @@ async function typeMessage(text, element) {
                 <pre class="language-sql"><code id="${codeId}">${escapeHtml(code)}</code></pre>
             </div>
         `;
+    }
+
+    messageDiv.innerHTML = `<div class="avatar">${avatar}</div><div class="content">${contentHtml}</div>`;
+    chatHistory.appendChild(messageDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+    if (code && window.Prism) Prism.highlightAll();
+}
+
+function addTypingIndicator() {
+    const id = 'typing-' + Date.now();
+    const typingDiv = document.createElement('div');
+    typingDiv.id = id;
+    typingDiv.className = 'message system';
+    typingDiv.innerHTML = `<div class="avatar">🤖</div><div class="content"><p>Thinking...</p></div>`;
+    chatHistory.appendChild(typingDiv);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+    return id;
+}
+
+function removeTypingIndicator(id) {
+    const element = document.getElementById(id);
+    if (element) element.remove();
+}
+
+function escapeHtml(unsafe) {
+    return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+window.copyCode = (id) => {
+    const codeElement = document.getElementById(id);
+    const text = codeElement.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector(`[onclick="copyCode('${id}')"]`);
+        if (btn) {
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => { btn.textContent = originalText; }, 2000);
         }
-
-        messageDiv.innerHTML = `<div class="avatar">${avatar}</div><div class="content">${contentHtml}</div>`;
-        chatHistory.appendChild(messageDiv);
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-        if (code && window.Prism) Prism.highlightAll();
-    }
-
-    function addTypingIndicator() {
-        const id = 'typing-' + Date.now();
-        const typingDiv = document.createElement('div');
-        typingDiv.id = id;
-        typingDiv.className = 'message system';
-        typingDiv.innerHTML = `<div class="avatar">🤖</div><div class="content"><p>Thinking...</p></div>`;
-        chatHistory.appendChild(typingDiv);
-        chatHistory.scrollTop = chatHistory.scrollHeight;
-        return id;
-    }
-
-    function removeTypingIndicator(id) {
-        const element = document.getElementById(id);
-        if (element) element.remove();
-    }
-
-    function escapeHtml(unsafe) {
-        return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-    }
-
-    window.copyCode = (id) => {
-        const codeElement = document.getElementById(id);
-        const text = codeElement.textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector(`[onclick="copyCode('${id}')"]`);
-            if (btn) {
-                const originalText = btn.textContent;
-                btn.textContent = 'Copied!';
-                setTimeout(() => { btn.textContent = originalText; }, 2000);
-            }
-        });
-    };
+    });
+};
 
 
