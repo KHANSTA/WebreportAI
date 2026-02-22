@@ -658,8 +658,8 @@ async function handleSend() {
         } else {
             // ChatGPT-Style Streaming Effect
             const messageDiv = addMessage("", 'system', response.code);
-            const contentDiv = messageDiv.querySelector('.content p') || messageDiv.querySelector('.content');
-            await typeMessage(response.text, contentDiv);
+            const textContent = messageDiv.querySelector('.text-content');
+            await typeMessage(response.text, textContent);
 
             // Log for memory
             messages[messages.length - 1].text = response.text;
@@ -714,23 +714,25 @@ function renderMessage(text, type, code = null, attachedFiles = []) {
     messageDiv.className = `message ${type} fade-in`;
     const avatar = type === 'user' ? '👤' : (isError ? '⚠️' : '🤖');
 
-    let contentHtml = text ? `<p>${text}</p>` : '';
+    let textHtml = `<div class="text-content">${text ? `<p>${text}</p>` : ''}</div>`;
+    let attachedHtml = '';
+    let codeHtml = '';
 
     if (attachedFiles.length > 0) {
-        contentHtml += `<div class="attached-files">`;
+        attachedHtml = `<div class="attached-files">`;
         attachedFiles.forEach(file => {
-            contentHtml += `
+            attachedHtml += `
                 <div class="file-pill">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <span>${file.name}</span>
                 </div>`;
         });
-        contentHtml += `</div>`;
+        attachedHtml += `</div>`;
     }
 
     if (code) {
         const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
-        contentHtml += `
+        codeHtml = `
             <div class="code-container">
                 <div class="code-title">
                     <span>WebReport Code</span>
@@ -741,7 +743,7 @@ function renderMessage(text, type, code = null, attachedFiles = []) {
         `;
     }
 
-    messageDiv.innerHTML = `<div class="avatar">${avatar}</div><div class="content">${contentHtml}</div>`;
+    messageDiv.innerHTML = `<div class="avatar">${avatar}</div><div class="content">${textHtml}${attachedHtml}${codeHtml}</div>`;
     chatHistory.appendChild(messageDiv);
     chatHistory.scrollTop = chatHistory.scrollHeight;
     if (code && window.Prism) Prism.highlightAll();
