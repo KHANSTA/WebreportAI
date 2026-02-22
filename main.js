@@ -211,6 +211,20 @@ const KNOWLEDGE_BASE = [
 
 const COMPLEX_SCENARIOS = [
     {
+        intent: 'v2 nodes folder creation',
+        primary: '/v2/nodes',
+        keywords: ['restclient', 'folder', 'create', 'v2 api', 'post', 'header', 'body'],
+        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for creating the Folder ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "type": 0, "name": "{NAME}" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the folder ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/nodes'\n@METHOD:POST\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
+        desc: 'Create a folder using the Content Server REST API v2 /nodes endpoint with proper headers and body.'
+    },
+    {
+        intent: 'v2 business workspace creation',
+        primary: '/v2/businessworkspaces',
+        keywords: ['restclient', 'workspace', 'create', 'v2 api', 'post', 'header', 'body', 'xecm'],
+        code: `[// Prepare headers for the REST API request ]\n[LL_REPTAG_'{ {"Content-Type", "application/json"}, {"otcsticket" , "[LL_REPTAG_OTCSTICKET /]" } }' ASSOCACTION:CREATE SETVAR:CSheader /]\n[// Construct the JSON body for the Business Workspace ]\n[LL_REPTAG_'{ "parent_id": {PNODE}, "template_id": {DEST_ID}, "name": "{NAME}" }' SETVAR:bodyjson /]\n[// Execute the REST call to create the workspace ]\n[LL_WEBREPORT_RESTCLIENT\n@HOST:'cs.example.com'\n@PORT:443\n@URI:'/cs/cs/api/v2/businessworkspaces'\n@METHOD:POST\n@SECURE:TRUE\n@HEADER:[LL_REPTAG_!CSheader /]\n@BODY:[LL_REPTAG_!bodyjson /]\n@RESPONSE:apiResponse\n@OUTPUT:ASSOC:apiResult /]`,
+        desc: 'Create a Business Workspace using the Content Server REST API v2 endpoint.'
+    },
+    {
         intent: 'permission check',
         primary: 'permission',
         keywords: ['access', 'check', 'button', 'show if', 'perm'],
@@ -293,11 +307,9 @@ const COMPLEX_SCENARIOS = [
         keywords: ['attribute', 'category', 'set', 'update', 'metadata', 'cataction'],
         code: `[LL_REPTAG_{NODE_ID} CATACTION:SETVALUE:"{CAT_NAME}":"{ATTR_NAME}":"{VALUE}" /]`,
         desc: 'Set the value of a specific attribute within a category for a node.'
-    }
-];
-
-// --- Contextual Memory ---
-let lastSystemResponse = null;
+    },
+    // --- Contextual Memory ---
+    let lastSystemResponse = null;
 
 // ADVANCED LOGIC: Entity Extraction & Combinatorial Intent Scoring
 async function generateResponse(query, hasAttachments = false) {
@@ -463,7 +475,7 @@ async function generateResponse(query, hasAttachments = false) {
             code: combinedCode,
             intent: combinedDesc.join(' and '),
             fullDesc: matchesToUse.map(m => m.desc).join(' Then '),
-            originalName: entities.oldName, // Store for potential revert
+            originalName: entities.name, // Corrected from entities.oldName
             originalParent: entities.pnode
         };
         lastSystemResponse = response;
@@ -629,62 +641,56 @@ async function typeMessage(text, element) {
         await new Promise(resolve => setTimeout(resolve, 30 + Math.random() * 20));
 
         // Handle bolding/markdown-lite
-        if (element.innerHTML.includes('**')) {
-            const parts = element.innerHTML.split('**');
-            if (parts.length >= 3) {
-                element.innerHTML = parts[0] + '<strong>' + parts[1] + '</strong>' + parts.slice(2).join('**');
-            }
-        }
+        element.innerHTML = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        element.classList.remove('typing-cursor');
     }
-    element.classList.remove('typing-cursor');
-}
 
-if (sendBtn) sendBtn.addEventListener('click', handleSend);
-if (userInput) {
-    userInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
+    if (sendBtn) sendBtn.addEventListener('click', handleSend);
+    if (userInput) {
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+    }
+
+    suggestionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            userInput.value = btn.textContent;
             handleSend();
-        }
+        });
     });
-}
 
-suggestionBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        userInput.value = btn.textContent;
-        handleSend();
-    });
-});
+    function addMessage(text, type, code = null, attachedFiles = []) {
+        const msg = { text, type, code, attachedFiles };
+        messages.push(msg);
+        return renderMessage(text, type, code, attachedFiles);
+    }
 
-function addMessage(text, type, code = null, attachedFiles = []) {
-    const msg = { text, type, code, attachedFiles };
-    messages.push(msg);
-    return renderMessage(text, type, code, attachedFiles);
-}
+    function renderMessage(text, type, code = null, attachedFiles = []) {
+        const messageDiv = document.createElement('div');
+        const isError = type.includes('error');
+        messageDiv.className = `message ${type} fade-in`;
+        const avatar = type === 'user' ? '👤' : (isError ? '⚠️' : '🤖');
 
-function renderMessage(text, type, code = null, attachedFiles = []) {
-    const messageDiv = document.createElement('div');
-    const isError = type.includes('error');
-    messageDiv.className = `message ${type} fade-in`;
-    const avatar = type === 'user' ? '👤' : (isError ? '⚠️' : '🤖');
+        let contentHtml = text ? `<p>${text}</p>` : '';
 
-    let contentHtml = text ? `<p>${text}</p>` : '';
-
-    if (attachedFiles.length > 0) {
-        contentHtml += `<div class="attached-files">`;
-        attachedFiles.forEach(file => {
-            contentHtml += `
+        if (attachedFiles.length > 0) {
+            contentHtml += `<div class="attached-files">`;
+            attachedFiles.forEach(file => {
+                contentHtml += `
                 <div class="file-pill">
                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
                     <span>${file.name}</span>
                 </div>`;
-        });
-        contentHtml += `</div>`;
-    }
+            });
+            contentHtml += `</div>`;
+        }
 
-    if (code) {
-        const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
-        contentHtml += `
+        if (code) {
+            const codeId = 'code-' + Math.random().toString(36).substr(2, 9);
+            contentHtml += `
             <div class="code-container">
                 <div class="code-title">
                     <span>WebReport Code</span>
@@ -693,45 +699,45 @@ function renderMessage(text, type, code = null, attachedFiles = []) {
                 <pre class="language-sql"><code id="${codeId}">${escapeHtml(code)}</code></pre>
             </div>
         `;
+        }
+
+        messageDiv.innerHTML = `<div class="avatar">${avatar}</div><div class="content">${contentHtml}</div>`;
+        chatHistory.appendChild(messageDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        if (code && window.Prism) Prism.highlightAll();
     }
 
-    messageDiv.innerHTML = `<div class="avatar">${avatar}</div><div class="content">${contentHtml}</div>`;
-    chatHistory.appendChild(messageDiv);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
-    if (code && window.Prism) Prism.highlightAll();
-}
+    function addTypingIndicator() {
+        const id = 'typing-' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.id = id;
+        typingDiv.className = 'message system';
+        typingDiv.innerHTML = `<div class="avatar">🤖</div><div class="content"><p>Thinking...</p></div>`;
+        chatHistory.appendChild(typingDiv);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        return id;
+    }
 
-function addTypingIndicator() {
-    const id = 'typing-' + Date.now();
-    const typingDiv = document.createElement('div');
-    typingDiv.id = id;
-    typingDiv.className = 'message system';
-    typingDiv.innerHTML = `<div class="avatar">🤖</div><div class="content"><p>Thinking...</p></div>`;
-    chatHistory.appendChild(typingDiv);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
-    return id;
-}
+    function removeTypingIndicator(id) {
+        const element = document.getElementById(id);
+        if (element) element.remove();
+    }
 
-function removeTypingIndicator(id) {
-    const element = document.getElementById(id);
-    if (element) element.remove();
-}
+    function escapeHtml(unsafe) {
+        return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
 
-function escapeHtml(unsafe) {
-    return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-}
-
-window.copyCode = (id) => {
-    const codeElement = document.getElementById(id);
-    const text = codeElement.textContent;
-    navigator.clipboard.writeText(text).then(() => {
-        const btn = document.querySelector(`[onclick="copyCode('${id}')"]`);
-        if (btn) {
-            const originalText = btn.textContent;
-            btn.textContent = 'Copied!';
-            setTimeout(() => { btn.textContent = originalText; }, 2000);
-        }
-    });
-};
+    window.copyCode = (id) => {
+        const codeElement = document.getElementById(id);
+        const text = codeElement.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector(`[onclick="copyCode('${id}')"]`);
+            if (btn) {
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = originalText; }, 2000);
+            }
+        });
+    };
 
 
