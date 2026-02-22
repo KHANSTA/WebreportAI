@@ -9,16 +9,16 @@ const KNOWLEDGE_BASE = [
     { tag: 'NODEINFO:PARENTID', category: 'node', desc: 'Get the ID of the parent container (folder).', keywords: ['parent', 'folder id', 'location'] },
     { tag: 'NODEINFO:SUBTYPE', category: 'node', desc: 'Get the node subtype ID.', keywords: ['subtype', 'class id', 'type'] },
     { tag: 'NODEINFO:SIZE:BYTES', category: 'node', desc: 'Get the size of a node in bytes.', keywords: ['size', 'bytes', 'file size'] },
-    { tag: 'NODEINFO:PATH:name', category: 'node', desc: 'Get the full path of a node.', keywords: ['path', 'location', 'breadcrumb'] },
-    { tag: 'NODEACTION:CREATE:parent:type:name', category: 'action', desc: 'Create a new node (folder, document, etc.).', keywords: ['create', 'add', 'new folder', 'new document'] },
+    { tag: 'NODEINFO:PATH:{NAME}', category: 'node', desc: 'Get the full path of a node.', keywords: ['path', 'location', 'breadcrumb'] },
+    { tag: 'NODEACTION:CREATE:{PNODE}:{TYPE}:{NAME}', category: 'action', desc: 'Create a new node (folder, document, etc.).', keywords: ['create', 'add', 'new folder', 'new document'] },
     { tag: 'NODEACTION:DELETE', category: 'action', desc: 'Delete a node from Content Server.', keywords: ['delete', 'remove', 'trash'] },
-    { tag: 'NODEACTION:COPY:dest', category: 'action', desc: 'Copy a node to a destination folder.', keywords: ['copy', 'duplicate', 'clone'] },
-    { tag: 'NODEACTION:MOVE:dest', category: 'action', desc: 'Move a node to a destination folder.', keywords: ['move', 'relocate', 'transfer'] },
-    { tag: 'NODEACTION:RENAME:name', category: 'action', desc: 'Rename an existing node.', keywords: ['rename', 'change name'] },
-    { tag: 'RESERVE:userID', category: 'node', desc: 'Reserve (checkout) a node to a specific user.', keywords: ['reserve', 'checkout', 'lock node'] },
+    { tag: 'NODEACTION:COPY:{DEST_ID}', category: 'action', desc: 'Copy a node to a destination folder.', keywords: ['copy', 'duplicate', 'clone'] },
+    { tag: 'NODEACTION:MOVE:{DEST_ID}', category: 'action', desc: 'Move a node to a destination folder.', keywords: ['move', 'relocate', 'transfer'] },
+    { tag: 'NODEACTION:RENAME:{NAME}', category: 'action', desc: 'Rename an existing node.', keywords: ['rename', 'change name'] },
+    { tag: 'RESERVE:{USER_ID}', category: 'node', desc: 'Reserve (checkout) a node to a specific user.', keywords: ['reserve', 'checkout', 'lock node'] },
     { tag: 'UNRESERVE', category: 'node', desc: 'Unreserve (checkin) a node.', keywords: ['unreserve', 'checkin', 'unlock node'] },
-    { tag: 'VERSIONCONTROL:type', category: 'node', desc: 'Set version control to STANDARD or ADVANCED.', keywords: ['version control', 'advanced versioning'] },
-    { tag: 'RENDITIONACTION:DELETE:ver:type', category: 'node', desc: 'Delete a specific rendition of a version.', keywords: ['delete rendition', 'remove rendition'] },
+    { tag: 'VERSIONCONTROL:{TYPE}', category: 'node', desc: 'Set version control to STANDARD or ADVANCED.', keywords: ['version control', 'advanced versioning'] },
+    { tag: 'RENDITIONACTION:DELETE:{VER}:{TYPE}', category: 'node', desc: 'Delete a specific rendition of a version.', keywords: ['delete rendition', 'remove rendition'] },
     { tag: 'VERINFO:FILENAME', category: 'node', desc: 'Get the filename of a specific version.', keywords: ['version filename', 'file name'] },
     { tag: 'VERSIONACTION:LOCK', category: 'node', desc: 'Lock a specific version of a node.', keywords: ['lock version', 'freeze version'] },
     { tag: 'CAT:{CAT_NAME}:{ATTR_NAME}:DISPLAY', category: 'metadata', desc: 'Access category attributes for the latest version.', keywords: ['category', 'attribute', 'metadata', 'get value'] },
@@ -33,22 +33,22 @@ const KNOWLEDGE_BASE = [
 
 
     // --- Content Control Tags ---
-    { tag: 'LL_WEBREPORT_CALL:name:parms', category: 'control', desc: 'Call a server-side Oscript function.', keywords: ['call', 'oscript', 'server script'] },
+    { tag: 'LL_WEBREPORT_CALL:{NAME}:{VALUE}', category: 'control', desc: 'Call a server-side Oscript function.', keywords: ['call', 'oscript', 'server script'] },
     { tag: 'LL_WEBREPORT_COMPILER:RUNTIMETAGS', category: 'control', desc: 'Eval constants/parameters at runtime.', keywords: ['compiler', 'eval', 'runtime tags'] },
     { tag: 'LL_WEBREPORT_COMPRESS', category: 'control', desc: 'Remove white space from final output.', keywords: ['compress', 'minify', 'white space'] },
     { tag: 'LL_WEBREPORT_ENABLEROWFILTERS', category: 'control', desc: 'Enable supporter for dynamic fc_filters.', keywords: ['filters', 'dynamic filter', 'fc_filters'] },
     { tag: 'LL_WEBREPORT_EXCLUDEHTML', category: 'control', desc: 'Exclude all standard CS wrapping (HTML/JS/CSS).', keywords: ['exclude html', 'raw output', 'xml mode'] },
-    { tag: 'LL_WEBREPORT_EXITIF:expr', category: 'control', desc: 'Stop processing rows when condition is met.', keywords: ['exit if', 'break', 'conditional stop'] },
-    { tag: 'LL_WEBREPORT_FOR:VAR:row:DATA:list', category: 'control', desc: 'Loop over a collection (List, RecArray, etc.).', keywords: ['for loop', 'iterate', 'each'] },
-    { tag: 'LL_WEBREPORT_IF:expr', category: 'control', desc: 'Conditional execution block.', keywords: ['if', 'elseif', 'else', 'condition'] },
-    { tag: 'LL_WEBREPORT_INCLUDEDISTINCT:key', category: 'control', desc: 'Limit rows to unique key values.', keywords: ['distinct', 'unique', 'deduplicate'] },
-    { tag: 'LL_WEBREPORT_INCLUDEIF:expr', category: 'control', desc: 'Determine if row will be included.', keywords: ['include if', 'row filter'] },
+    { tag: 'LL_WEBREPORT_EXITIF:{VALUE}', category: 'control', desc: 'Stop processing rows when condition is met.', keywords: ['exit if', 'break', 'conditional stop'] },
+    { tag: 'LL_WEBREPORT_FOR:VAR:row:DATA:{VALUE}', category: 'control', desc: 'Loop over a collection (List, RecArray, etc.).', keywords: ['for loop', 'iterate', 'each'] },
+    { tag: 'LL_WEBREPORT_IF:{VALUE}', category: 'control', desc: 'Conditional execution block.', keywords: ['if', 'elseif', 'else', 'condition'] },
+    { tag: 'LL_WEBREPORT_INCLUDEDISTINCT:{ATTR_NAME}', category: 'control', desc: 'Limit rows to unique key values.', keywords: ['distinct', 'unique', 'deduplicate'] },
+    { tag: 'LL_WEBREPORT_INCLUDEIF:{VALUE}', category: 'control', desc: 'Determine if row will be included.', keywords: ['include if', 'row filter'] },
     { tag: 'LL_WEBREPORT_INCLUDERANGE:START:END:MAX', category: 'control', desc: 'Limit rows to a specific range.', keywords: ['range', 'pagination', 'maxrows'] },
     { tag: 'LL_WEBREPORT_INSERTJSON', category: 'control', desc: 'Insert data formatted as JSON.', keywords: ['insert json', 'api response'] },
-    { tag: 'LL_WEBREPORT_JSLIBS:libs', category: 'control', desc: 'Insert standard CS JavaScript libraries.', keywords: ['js libs', 'jquery', 'browse js'] },
+    { tag: 'LL_WEBREPORT_JSLIBS:{VALUE}', category: 'control', desc: 'Insert standard CS JavaScript libraries.', keywords: ['js libs', 'jquery', 'browse js'] },
     { tag: 'LL_WEBREPORT_RESTCLIENT', category: 'control', desc: 'Send requests to external REST APIs.', keywords: ['rest', 'api', 'http request'] },
-    { tag: 'LL_WEBREPORT_SORT:key:dir', category: 'control', desc: 'Sort the report data set.', keywords: ['sort', 'order by'] },
-    { tag: 'LL_WEBREPORT_SUBWEBREPORT:id', category: 'control', desc: 'Call another WebReport and insert results.', keywords: ['sub webreport', 'nested'] },
+    { tag: 'LL_WEBREPORT_SORT:{ATTR_NAME}:{VALUE}', category: 'control', desc: 'Sort the report data set.', keywords: ['sort', 'order by'] },
+    { tag: 'LL_WEBREPORT_SUBWEBREPORT:{DEST_ID}', category: 'control', desc: 'Call another WebReport and insert results.', keywords: ['sub webreport', 'nested'] },
 
 
     // --- Data & Request Tags ---
@@ -87,38 +87,38 @@ const KNOWLEDGE_BASE = [
     { tag: 'WFACTION:SUSPEND', category: 'workflow', desc: 'Suspend an executing workflow.', keywords: ['suspend workflow', 'pause wf'] },
     { tag: 'WFACTION:RESUME', category: 'workflow', desc: 'Resume a suspended workflow.', keywords: ['resume workflow', 'start wf'] },
     { tag: 'WFACTION:STOP', category: 'workflow', desc: 'Stop an active workflow process.', keywords: ['stop workflow', 'kill process'] },
-    { tag: 'WFATTR:name:DISPLAY', category: 'workflow', desc: 'Get a workflow attribute value.', keywords: ['get wf attr', 'workflow variable'] },
+    { tag: 'WFATTR:{ATTR_NAME}:DISPLAY', category: 'workflow', desc: 'Get a workflow attribute value.', keywords: ['get wf attr', 'workflow variable'] },
     { tag: 'WFINFO:TITLE', category: 'workflow', desc: 'Get the title of the workflow instance.', keywords: ['workflow title', 'wf name'] },
     { tag: 'WFINFO:STATUS', category: 'workflow', desc: 'Get the current status of the workflow.', keywords: ['workflow status', 'wf state'] },
     { tag: 'WFTASKINFO:BUTTONS', category: 'workflow', desc: 'Get disposition buttons for a workflow task.', keywords: ['task buttons', 'dispositions'] },
-    { tag: 'WFTASKACTION:REASSIGN:user', category: 'workflow', desc: 'Reassign a workflow task to another user/group.', keywords: ['reassign', 'delegate', 'forward task'] },
-    { tag: 'WFTASKACTION:SENDON:disposition', category: 'workflow', desc: 'Send a workflow step on with a specific disposition.', keywords: ['send on', 'complete step', 'submit task'] },
+    { tag: 'WFTASKACTION:REASSIGN:{USER_ID}', category: 'workflow', desc: 'Reassign a workflow task to another user/group.', keywords: ['reassign', 'delegate', 'forward task'] },
+    { tag: 'WFTASKACTION:SENDON:{VALUE}', category: 'workflow', desc: 'Send a workflow step on with a specific disposition.', keywords: ['send on', 'complete step', 'submit task'] },
     { tag: 'SETWFATTACH:COPY', category: 'workflow', desc: 'Copy a node to workflow attachments.', keywords: ['attach node', 'workflow copy'] },
-    { tag: 'SETWFATTR:name:val', category: 'workflow', desc: 'Set a workflow attribute value.', keywords: ['set workflow attribute', 'wf set'] },
-    { tag: 'SETWFFORM:form:attr:val', category: 'workflow', desc: 'Populate a field in a workflow form.', keywords: ['setform', 'workflow form', 'populate field'] },
+    { tag: 'SETWFATTR:{ATTR_NAME}:{VALUE}', category: 'workflow', desc: 'Set a workflow attribute value.', keywords: ['set workflow attribute', 'wf set'] },
+    { tag: 'SETWFFORM:{CAT_NAME}:{ATTR_NAME}:{VALUE}', category: 'workflow', desc: 'Populate a field in a workflow form.', keywords: ['setform', 'workflow form', 'populate field'] },
     { tag: 'SETWFCOMMENT', category: 'workflow', desc: 'Add a comment to the current workflow step.', keywords: ['add comment', 'workflow note'] },
     { tag: 'WFCOMMENTS', category: 'workflow', desc: 'Retrieve all comments for a workflow as a RecArray.', keywords: ['get comments', 'wf audit notes'] },
     { tag: 'WFESIGNINFO:CONFIG', category: 'workflow', desc: 'Get eSign configuration settings.', keywords: ['esign', 'electronic signature'] },
-    { tag: 'WFFORM:form:field:DISPLAY', category: 'workflow', desc: 'Get a value from a workflow form field.', keywords: ['workflow form value', 'get form field'] },
+    { tag: 'WFFORM:{CAT_NAME}:{ATTR_NAME}:DISPLAY', category: 'workflow', desc: 'Get a value from a workflow form field.', keywords: ['workflow form value', 'get form field'] },
 
     // --- Permissions, Roles & Security ---
     { tag: 'PERMINFO:OWNER', category: 'permission', desc: 'Get owner permission details.', keywords: ['who owns', 'owner access'] },
-    { tag: 'PERMACTION:ACL:user:UPDATE:perms', category: 'permission', desc: 'Update ACL permissions for a user.', keywords: ['grant access', 'revoke', 'set permissions'] },
-    { tag: 'PERMACTION:COPY:source', category: 'permission', desc: 'Copy permissions from a source node.', keywords: ['copy perms', 'inherit from'] },
+    { tag: 'PERMACTION:ACL:{USER_ID}:UPDATE:{VALUE}', category: 'permission', desc: 'Update ACL permissions for a user.', keywords: ['grant access', 'revoke', 'set permissions'] },
+    { tag: 'PERMACTION:COPY:{PNODE}', category: 'permission', desc: 'Copy permissions from a source node.', keywords: ['copy perms', 'inherit from'] },
     { tag: 'PERMCHECK:DELETE', category: 'permission', desc: 'Check if current user can delete the node.', keywords: ['can delete', 'check access'] },
-    { tag: 'ROLEINFO:name', category: 'permission', desc: 'Get members and info for a workspace role.', keywords: ['role info', 'workspace team'] },
-    { tag: 'ROLEACTION:ADD:NAME=val', category: 'permission', desc: 'Create a new role in a workspace.', keywords: ['add role', 'create team'] },
+    { tag: 'ROLEINFO:{NAME}', category: 'permission', desc: 'Get members and info for a workspace role.', keywords: ['role info', 'workspace team'] },
+    { tag: 'ROLEACTION:ADD:{NAME}={VALUE}', category: 'permission', desc: 'Create a new role in a workspace.', keywords: ['add role', 'create team'] },
     { tag: 'SCINFO:CURRENTSECURITY:LEVEL', category: 'permission', desc: 'Get security clearance level of a node.', keywords: ['security level', 'clearance'] },
-    { tag: 'SCACTION:CURRENTSECURITY:val', category: 'permission', desc: 'Set security clearance level for a node.', keywords: ['set clearance', 'change security'] },
+    { tag: 'SCACTION:CURRENTSECURITY:{VALUE}', category: 'permission', desc: 'Set security clearance level for a node.', keywords: ['set clearance', 'change security'] },
     { tag: 'SCUSERINFO:SECURITYCLEARANCELEVEL', category: 'permission', desc: 'Get a users security clearance level.', keywords: ['user clearance', 'security profile'] },
 
     // --- User & Group Administration ---
     { tag: 'USERINFO:NAME', category: 'user', desc: 'Get the full name of a user.', keywords: ['user name', 'full name'] },
     { tag: 'USERINFO:EMAIL', category: 'user', desc: 'Get the email address of a user.', keywords: ['email', 'mail'] },
-    { tag: 'USERACTION:CREATE:LOGIN:PASS:NAME', category: 'user', desc: 'Create a new user account.', keywords: ['add user', 'new user'] },
-    { tag: 'USERINGROUP:group', category: 'user', desc: 'Check if a user is in a specific group.', keywords: ['in group', 'membership'] },
+    { tag: 'USERACTION:CREATE:{PNODE}:{TYPE}:{NAME}', category: 'user', desc: 'Create a new user account.', keywords: ['add user', 'new user'] },
+    { tag: 'USERINGROUP:{NAME}', category: 'user', desc: 'Check if a user is in a specific group.', keywords: ['in group', 'membership'] },
     { tag: 'GROUPINFO:MEMBERS', category: 'user', desc: 'List all members of a group.', keywords: ['group members', 'who in group'] },
-    { tag: 'USERPREFACTION:SET:pref:val', category: 'user', desc: 'Set a user preference (Start Page, etc.).', keywords: ['user settings', 'preference'] },
+    { tag: 'USERPREFACTION:SET:{NAME}:{VALUE}', category: 'user', desc: 'Set a user preference (Start Page, etc.).', keywords: ['user settings', 'preference'] },
 
     // --- Logic, Math & Data Utilities ---
     { tag: 'ADD:val', category: 'math', desc: 'Add a numeric value.', keywords: ['plus', 'add', 'sum'] },
@@ -131,34 +131,32 @@ const KNOWLEDGE_BASE = [
     { tag: 'SUM:list', category: 'math', desc: 'Calculate the sum of a list or RecArray column.', keywords: ['sum', 'total'] },
     { tag: 'MAX:list', category: 'math', desc: 'Find the maximum value in a list.', keywords: ['max', 'highest', 'top'] },
     { tag: 'MIN:list', category: 'math', desc: 'Find the minimum value in a list.', keywords: ['min', 'lowest', 'bottom'] },
-    { tag: 'DECODE:match1:res1:else', category: 'logic', desc: 'Value substitution (IF-THEN-ELSE shorthand).', keywords: ['decode', 'switch', 'mapping'] },
-    { tag: 'TODATE:format', category: 'date', desc: 'Convert a string to a date object.', keywords: ['parse date', 'to date'] },
-    { tag: 'DATE:format', category: 'date', desc: 'Format a date using a specific mask.', keywords: ['format date', 'display date'] },
+    { tag: 'DECODE:{NAME}:{VALUE}:else', category: 'logic', desc: 'Value substitution (IF-THEN-ELSE shorthand).', keywords: ['decode', 'switch', 'mapping'] },
+    { tag: 'TODATE:{VALUE}', category: 'date', desc: 'Convert a string to a date object.', keywords: ['parse date', 'to date'] },
+    { tag: 'DATE:{VALUE}', category: 'date', desc: 'Format a date using a specific mask.', keywords: ['format date', 'display date'] },
     { tag: 'TOJSON', category: 'format', desc: 'Convert an object/array to a JSON string.', keywords: ['to json', 'serialize'] },
     { tag: 'UNESCAPEJSON', category: 'format', desc: 'Unescape JSON control characters.', keywords: ['unescape', 'json clean'] },
-    { tag: 'TOLIST:delim', category: 'format', desc: 'Convert a string to a list.', keywords: ['to list', 'split string'] },
-    { tag: 'LIST:val1:val2', category: 'format', desc: 'Create a list from specific values.', keywords: ['create list', 'array'] },
+    { tag: 'TOLIST:{VALUE}', category: 'format', desc: 'Convert a string to a list.', keywords: ['to list', 'split string'] },
+    { tag: 'LIST:{PNODE}:{DEST_ID}', category: 'format', desc: 'Create a list from specific values.', keywords: ['create list', 'array'] },
     { tag: 'UPPER', category: 'format', desc: 'Convert text to uppercase.', keywords: ['uppercase', 'capital'] },
     { tag: 'LOWER', category: 'format', desc: 'Convert text to lowercase.', keywords: ['lowercase', 'small caps'] },
     { tag: 'TRIM', category: 'format', desc: 'Remove leading/trailing whitespace.', keywords: ['trim', 'strip space'] },
-    { tag: 'SUBSTR:start:width', category: 'format', desc: 'Extract a substring by width.', keywords: ['substring', 'part of string'] },
-    { tag: 'SLICE:start:end', category: 'format', desc: 'Extract a slice between indices.', keywords: ['slice', 'portion'] },
+    { tag: 'SUBSTR:{VALUE}:{VALUE}', category: 'format', desc: 'Extract a substring by width.', keywords: ['substring', 'part of string'] },
+    { tag: 'SLICE:{VALUE}:{VALUE}', category: 'format', desc: 'Extract a slice between indices.', keywords: ['slice', 'portion'] },
     { tag: 'LENGTH', category: 'format', desc: 'Get character count of a string.', keywords: ['length', 'size', 'count'] },
-    { tag: 'REPLACE:old:new', category: 'format', desc: 'Replace specific text in a string.', keywords: ['replace', 'change text'] },
+    { tag: 'REPLACE:{NAME}:{VALUE}', category: 'format', desc: 'Replace specific text in a string.', keywords: ['replace', 'change text'] },
     { tag: 'STRIPHTML', category: 'format', desc: 'Remove HTML tags from a string.', keywords: ['strip html', 'plain text'] },
-    { tag: 'PATFIND:regex', category: 'format', desc: 'Find a regex-like pattern.', keywords: ['pattern find', 'regex'] },
-    { tag: 'PATCHANGE:old:new', category: 'format', desc: 'Replace text using pattern matching.', keywords: ['pattern change', 'smart replace'] },
+    { tag: 'PATFIND:{VALUE}', category: 'format', desc: 'Find a regex-like pattern.', keywords: ['pattern find', 'regex'] },
+    { tag: 'PATCHANGE:{NAME}:{VALUE}', category: 'format', desc: 'Replace text using pattern matching.', keywords: ['pattern change', 'smart replace'] },
     { tag: 'ESCAPEFORJS', category: 'format', desc: 'Escape string for use in JavaScript.', keywords: ['js escape', 'script safe'] },
 
     // --- Database & External ---
-    { tag: 'RUNSQL:params', category: 'database', desc: 'Execute a LiveReport with parameters.', keywords: ['runsql', 'live report', 'query'] },
-    { tag: 'WFDBLOOKUP:table:col', category: 'database', desc: 'Query WebForms database tables.', keywords: ['wfdb', 'lookup table'] },
+    { tag: 'RUNSQL:{VALUE}', category: 'database', desc: 'Execute a LiveReport with parameters.', keywords: ['runsql', 'live report', 'query'] },
+    { tag: 'WFDBLOOKUP:{NAME}:{ATTR_NAME}', category: 'database', desc: 'Query WebForms database tables.', keywords: ['wfdb', 'lookup table'] },
     { tag: 'PARSECSV', category: 'database', desc: 'Parse a CSV string into a RecArray.', keywords: ['parse csv', 'read csv'] },
     { tag: 'TOXML', category: 'database', desc: 'Format data as XML.', keywords: ['to xml', 'soap'] },
-    { tag: 'RUNSWR:params', category: 'integration', desc: 'Call a sub-WebReport with parameters.', keywords: ['sub webreport', 'runswr'] },
+    { tag: 'RUNSWR:{VALUE}', category: 'integration', desc: 'Call a sub-WebReport with parameters.', keywords: ['sub webreport', 'runswr'] },
     { tag: 'RUNTEMPLATE', category: 'integration', desc: 'Execute a template using current context.', keywords: ['run template', 'layout'] },
-
-    // --- Specialized Modules (XENG) ---
     { tag: 'XENGADN:NEXT', category: 'specialized', desc: 'Get the next number in an ADN sequence.', keywords: ['adn', 'numbering'] },
     { tag: 'XENGADNACTION:GENERATE', category: 'specialized', desc: 'Bulk generate ADN numbers.', keywords: ['adn bulk', 'generate ids'] },
     { tag: 'XENGADNACTION:LOCK', category: 'specialized', desc: 'Lock an ADN number.', keywords: ['lock adn'] },
@@ -171,21 +169,17 @@ const KNOWLEDGE_BASE = [
     { tag: 'XENGTRANSMITTALACTION:SEND', category: 'specialized', desc: 'Send a transmittal package.', keywords: ['send transmittal', 'issue docs'] },
     { tag: 'XENGCRTACTION:CONTROL', category: 'specialized', desc: 'Convert document to controlled revision.', keywords: ['control doc', 'crt'] },
     { tag: 'XENGCRTACTION:SIGNOUT', category: 'specialized', desc: 'Sign out a controlled document for editing.', keywords: ['sign out crt', 'checkout'] },
-
-    // --- Workflow & Forms Management ---
     { tag: 'WFACTION:SUSPEND', category: 'workflow', desc: 'Suspend an executing workflow instance.', keywords: ['suspend wf', 'pause workflow'] },
     { tag: 'WFACTION:RESUME', category: 'workflow', desc: 'Resume a suspended workflow.', keywords: ['resume wf', 'continue workflow'] },
-    { tag: 'WFACTION:SETATTR:name:val', category: 'workflow', desc: 'Set a workflow attribute value externally.', keywords: ['set wf attr', 'update workflow'] },
-    { tag: 'WFATTR:attname:DISPLAY', category: 'workflow', desc: 'Display a workflow attribute value.', keywords: ['get wf attr', 'show attribute'] },
+    { tag: 'WFACTION:SETATTR:{ATTR_NAME}:{VALUE}', category: 'workflow', desc: 'Set a workflow attribute value externally.', keywords: ['set wf attr', 'update workflow'] },
+    { tag: 'WFATTR:{ATTR_NAME}:DISPLAY', category: 'workflow', desc: 'Display a workflow attribute value.', keywords: ['get wf attr', 'show attribute'] },
     { tag: 'WFINFO:STATUS', category: 'workflow', desc: 'Get current workflow status.', keywords: ['workflow status', 'wf state'] },
     { tag: 'WFTASKACTION:REASSIGN', category: 'workflow', desc: 'Reassign a workflow step to another user.', keywords: ['reassign', 'delegate step'] },
     { tag: 'WFTASKACTION:SENDON', category: 'workflow', desc: 'Send a workflow step to the next task.', keywords: ['send on', 'complete step'] },
     { tag: 'SETWFATTACH:COPY', category: 'workflow', desc: 'Copy a node to workflow attachments.', keywords: ['workflow attach', 'copy to wf'] },
-    { tag: 'SETWFATTR:attname', category: 'workflow', desc: 'Set a workflow attribute in destination.', keywords: ['set workflow attribute'] },
-    { tag: 'SETWFFORM:form:attr', category: 'workflow', desc: 'Populate a workflow form field.', keywords: ['set workflow form', 'fill form'] },
-    { tag: 'WFDBLOOKUP:table:col', category: 'workflow', desc: 'Lookup data from WebForm database tables.', keywords: ['form lookup', 'db lookup'] },
-
-    // --- User & Group Administration ---
+    { tag: 'SETWFATTR:{ATTR_NAME}', category: 'workflow', desc: 'Set a workflow attribute in destination.', keywords: ['set workflow attribute'] },
+    { tag: 'SETWFFORM:{CAT_NAME}:{ATTR_NAME}', category: 'workflow', desc: 'Populate a workflow form field.', keywords: ['set workflow form', 'fill form'] },
+    { tag: 'WFDBLOOKUP:{NAME}:{VALUE}', category: 'workflow', desc: 'Lookup data from WebForm database tables.', keywords: ['form lookup', 'db lookup'] },
     { tag: 'USERACTION:CREATE', category: 'users', desc: 'Create a new Content Server user or group.', keywords: ['create user', 'add member'] },
     { tag: 'USERACTION:UPDATE', category: 'users', desc: 'Update user privileges or metadata.', keywords: ['update user', 'modify account'] },
     { tag: 'USERINFO:FULLNAME', category: 'users', desc: 'Get full name of a user.', keywords: ['user name', 'full name'] },
@@ -193,34 +187,26 @@ const KNOWLEDGE_BASE = [
     { tag: 'USERINGROUP', category: 'users', desc: 'Verify if a user belongs to a specific group.', keywords: ['is member', 'group check'] },
     { tag: 'USERPREF:GENERAL:DFTSTARTPAGE', category: 'users', desc: 'Get user default home page.', keywords: ['user start page', 'home preference'] },
     { tag: 'USERPREFACTION:GENERAL:STARTPAGE', category: 'users', desc: 'Set user default home page.', keywords: ['set start page', 'update home'] },
-
-    // --- Node & Version Management ---
     { tag: 'VERINFO:MIMETYPE', category: 'node', desc: 'Get the MIME type of a node version.', keywords: ['file type', 'mimetype'] },
     { tag: 'VERINFO:VERSION', category: 'node', desc: 'Get version label (e.g., 1.2).', keywords: ['version number', 'label'] },
     { tag: 'VERSIONACTION:LOCK', category: 'node', desc: 'Lock a specific version.', keywords: ['lock version'] },
-    { tag: 'VERSIONCAT:cat:attr:DISPLAY', category: 'node', desc: 'Get category value for a specific version.', keywords: ['version cat', 'historical metadata'] },
+    { tag: 'VERSIONCAT:{CAT_NAME}:{ATTR_NAME}:DISPLAY', category: 'node', desc: 'Get category value for a specific version.', keywords: ['version cat', 'historical metadata'] },
     { tag: 'SETSHAREEXPIRY', category: 'node', desc: 'Update the expiry date for a shared node.', keywords: ['share expire', 'link timeout'] },
     { tag: 'TABS', category: 'node', desc: 'Get functional menu tabs for a node.', keywords: ['node tabs', 'properties menu'] },
-
-    // --- Audit & Compliance ---
-    { tag: 'AUDITINFO:col', category: 'audit', desc: 'Get details from the most recent Audit Event.', keywords: ['audit info', 'compliance'] },
-    { tag: 'AUDITACTION:NODE:val', category: 'audit', desc: 'Log a custom audit event for a node.', keywords: ['audit log', 'track action'] },
-
-    // --- Business Workspaces (xECM) ---
+    { tag: 'AUDITINFO:{ATTR_NAME}', category: 'audit', desc: 'Get details from the most recent Audit Event.', keywords: ['audit info', 'compliance'] },
+    { tag: 'AUDITACTION:NODE:{VALUE}', category: 'audit', desc: 'Log a custom audit event for a node.', keywords: ['audit log', 'track action'] },
     { tag: 'WKSPINFO:RELATION:CHILD', category: 'specialized', desc: 'Get related child workspaces.', keywords: ['sub workspace', 'linked wksp'] },
     { tag: 'WKSPACTION:RELATION:ADD', category: 'specialized', desc: 'Link a child workspace.', keywords: ['link workspace', 'add relation'] },
     { tag: 'BOINFO:WKSPNODEID', category: 'specialized', desc: 'Get Workspace Node ID for a Business Object.', keywords: ['bo info', 'workspace node'] },
-
-    // --- Utilities & Conversion ---
     { tag: 'TOJSON', category: 'logic', desc: 'Convert OScript structures to JSON.', keywords: ['to json', 'javascript data'] },
-    { tag: 'TOLIST:sep', category: 'logic', desc: 'Convert delimited string to a List.', keywords: ['to list', 'split string'] },
+    { tag: 'TOLIST:{VALUE}', category: 'logic', desc: 'Convert delimited string to a List.', keywords: ['to list', 'split string'] },
     { tag: 'VALUES', category: 'logic', desc: 'Extract values from an Assoc or Record into a List.', keywords: ['assoc values', 'record to list'] },
     { tag: 'XLATE', category: 'logic', desc: 'Translate a system string (Localization).', keywords: ['translate', 'localise', 'xlate'] },
     { tag: 'TIMESINCE', category: 'logic', desc: 'Calculate readable time delta between dates.', keywords: ['time since', 'ago', 'duration'] },
     { tag: 'STRIPHTML', category: 'logic', desc: 'Remove HTML tags from a string.', keywords: ['clean html', 'text only'] },
     { tag: 'SECURETOKEN', category: 'logic', desc: 'Generate a secure request token for actions.', keywords: ['token', 'security key'] },
     { tag: 'URLTOPOST', category: 'logic', desc: 'Convert GET URL parameters to POST hidden inputs.', keywords: ['url to post', 'form security'] },
-    { tag: 'BITCHECK:mask', category: 'logic', desc: 'Test if specific binary bits are set.', keywords: ['bit check', 'binary', 'mask'] }
+    { tag: 'BITCHECK:{VALUE}', category: 'logic', desc: 'Test if specific binary bits are set.', keywords: ['bit check', 'binary', 'mask'] }
 ];
 
 const COMPLEX_SCENARIOS = [
@@ -343,11 +329,14 @@ async function generateResponse(query, hasAttachments = false) {
     const entities = {
         nodeId: nodeIds[0] || "DATAID",
         destId: nodeIds[1] || "2000",
+        pnode: nodeIds[1] || nodeIds[0] || "1234",
         userId: nodeIds[0] || "1000",
         name: quoted[0] || "New Name",
         cat: "CategoryName",
         attr: "AttributeName",
-        val: "NewValue"
+        val: "NewValue",
+        type: "FOLDER",
+        ver: "1"
     };
 
     // Contextual Role Assignment for Quoted Strings
@@ -356,11 +345,13 @@ async function generateResponse(query, hasAttachments = false) {
             const str = m[1];
             const lowerStr = str.toLowerCase();
             const pos = m.index;
-            const around = q.substring(Math.max(0, pos - 20), Math.min(q.length, pos + str.length + 20));
+            const around = q.substring(Math.max(0, pos - 30), Math.min(q.length, pos + str.length + 30));
 
             if (around.includes("category") || around.includes("cat")) entities.cat = str;
             else if (around.includes("attribute") || around.includes("attr")) entities.attr = str;
             else if (around.includes("value") || around.includes(" to ") || around.includes("=")) entities.val = str;
+            else if (around.includes("type") || around.includes("kind")) entities.type = str.toUpperCase();
+            else if (around.includes("version") || around.includes("ver")) entities.ver = str;
             else if (i === 0) entities.name = str;
         });
     }
@@ -424,11 +415,14 @@ async function generateResponse(query, hasAttachments = false) {
             // Parameter Injection
             snippet = snippet.replace(/{NODE_ID}/g, entities.nodeId)
                 .replace(/{DEST_ID}/g, entities.destId)
+                .replace(/{PNODE}/g, entities.pnode)
                 .replace(/{USER_ID}/g, entities.userId)
                 .replace(/{NAME}/g, entities.name)
                 .replace(/{CAT_NAME}/g, entities.cat)
                 .replace(/{ATTR_NAME}/g, entities.attr)
-                .replace(/{VALUE}/g, entities.val);
+                .replace(/{VALUE}/g, entities.val)
+                .replace(/{TYPE}/g, entities.type)
+                .replace(/{VER}/g, entities.ver);
 
             combinedCode += (index > 0 ? "\n\n" : "") + snippet;
             combinedDesc.push(match.intent);
@@ -480,7 +474,12 @@ async function generateResponse(query, hasAttachments = false) {
         // Apply Entity Injection to Individual Tags too
         code = code.replace(/{CAT_NAME}/g, entities.cat)
             .replace(/{ATTR_NAME}/g, entities.attr)
-            .replace(/{VALUE}/g, entities.val);
+            .replace(/{VALUE}/g, entities.val)
+            .replace(/{NAME}/g, entities.name)
+            .replace(/{PNODE}/g, entities.pnode)
+            .replace(/{DEST_ID}/g, entities.destId)
+            .replace(/{TYPE}/g, entities.type)
+            .replace(/{VER}/g, entities.ver);
 
         const response = {
             text: `I've identified the specific WebReport operation for **${best.desc}**:`,
